@@ -20,7 +20,7 @@ $page = 1;
 $downloadable = false;
 
 $ALLOWED_ACTIONS = ['convert','next','previous','delete','reset','download','upload media','upload recording','reload'];
-$ALLOWED_EXTENSIONS = ['ppt','pptx','ods','keynote'];
+$ALLOWED_EXTENSIONS = ['ppt','pptx','odp','keynote'];
 
 // verify the page action
 if (isset($_POST['action'])) {
@@ -165,16 +165,28 @@ function convertSlides($upload, $folder) {
         'sandbox' => false
     ]);
 
+    $extn = pathinfo($upload['name'], PATHINFO_EXTENSION);
+    if ($extn === "ppt" || $extn === "odp") {
+        $TASK = (new Task('convert', 'task-1'))
+            ->set('output_format','jpg')
+            ->set('input_format',$extn)
+            ->set('engine','libreoffice')
+            ->set('pixel_density', 300)
+            ->set('input',["import-1"]);
+    } else {
+        $TASK = (new Task('convert', 'task-1'))
+            ->set('output_format','jpg')
+            ->set('pixel_density', 300)
+            ->set('input',["import-1"]);
+    }
+
     // create a new job with its import, convert and export steps
     $job = (new Job())
     ->addTask(
         (new Task('import/upload', 'import-1'))
         )
     ->addTask(
-        (new Task('convert', 'task-1'))
-            ->set('output_format', 'jpg')
-            ->set('input', ["import-1"])
-            ->set('pixel_density', 300)
+        $TASK
         )
     ->addTask(
         (new Task('export/url', 'export-1'))
@@ -294,7 +306,7 @@ switch ($action) {
                 $ext = pathinfo($upload['name'], PATHINFO_EXTENSION);
                 if (!in_array($ext, $ALLOWED_EXTENSIONS)) {
                     $error = 1;
-                    $feedback = "File must be a .pptx, .ppt, .keynote or .ods file";
+                    $feedback = "File must be a .pptx, .ppt, .keynote or .odp file";
                 } else {
                     $SlideArray = convertSlides($upload, $WORKING_DIR);
                     $step = 1;
