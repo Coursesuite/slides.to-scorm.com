@@ -390,6 +390,7 @@ switch ($action) {
         $files = glob($WORKING_DIR . '/*');
         $files_array = [];
         foreach ($files as $file) {
+            if (basename($file) === "slides.json") continue;
             $files_array[] = "<file href='" . basename($file) . "' />";
         }
 
