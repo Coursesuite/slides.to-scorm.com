@@ -1,0 +1,7 @@
+{
+    "require": {
+        "cloudconvert/cloudconvert-php": "^3.2",
+        "php-http/guzzle7-adapter": "^1.0",
+        "mhor/php-mediainfo": "^5.4"
+    }
+}

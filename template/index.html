@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta content="width=device-width, initial-scale=1" name="viewport">
+		<meta content="{{name}}" name="title">
+		<title>{{name}}</title>
+		<script src="https://polyfill.io/v3/polyfill.min.js"></script>
+		<style>
+		html { height: 100vh; box-sizing: border-box; }
+		*, *:before, *:after { box-sizing: inherit; }
+		body { margin: 0; font-family: sans-serif; background-color: #1d1d1b; display:flex; flex-direction: column; min-height: 100vh; overflow:hidden; }
+		.content-wrapper { flex-direction: column; flex: 1; }
+		.slides { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; height: calc(100vh - 48px) }
+		.slides video { position: absolute; bottom: 1rem; right: 1rem; max-width: 25% }
+		.slides video.alt { bottom: auto; right: auto; left: 1rem; top: 1rem; }
+		.slides video.big { max-width: 50%; }
+		.slides img { object-fit: contain; height: 100%; width: 100%; display: block; }
+		.slides #intro { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: white; }
+		.slides #intro h1 { font-size: 2rem; display: block; }
+		.slides #intro button { display: inline-block; }
+		.controls { height: 48px; }
+		button { background:transparent; border:none; cursor: pointer; }
+		.slide-controls { display: flex; align-items: center; padding: 5px; }
+		#timestamp { flex: 1; color: white; }
+		#playback > * { display: none; }
+		#playback.playing > .pause, #playback.paused > .play, #playback.stopped > .stop { display: block; }
+		.slide-graph { display: flex; flex-direction: row; align-items: center; justify-content: space-evenly; height: 3px; padding: 1px 0 }
+		.slide-graph > span { margin-right: 2px; background-color: rgba(255,255,255,.5); display: block; height: 3px; flex: 1; cursor: pointer; }
+		.slide-graph > span:last-of-type { margin-right: 0; }
+		.slide-graph > span > span { background-color: red; height: 2px; display: block; }
+		ins{text-decoration:none}
+		</style>
+
+	</head>
+	<body onunload="doUnload()" onbeforeunload="doUnload()">
+		<noscript>This course will only function if JavaScript is enabled.</noscript>
+		<div class="content-wrapper">
+			<div class="slides">
+				<img src="about:blank" id="slide">
+				<video id="media" autoplay allowfullscreen preload title="Tap to move, hold to toggle size" data-long-press-delay="500"></video>
+				<div id="intro"><h1>it's ready to download! !@#$%^&*() woot!</h1><button id="start" onclick="document.getElementById('intro').style.display='none';"><svg width="50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 142.448 142.448" style="enable-background:new 0 0 142.448 142.448" xml:space="preserve"><path fill="black" d="M142.411 68.9C141.216 31.48 110.968 1.233 73.549.038c-20.361-.646-39.41 7.104-53.488 21.639C6.527 35.65-.584 54.071.038 73.549c1.194 37.419 31.442 67.667 68.861 68.861.779.025 1.551.037 2.325.037 19.454 0 37.624-7.698 51.163-21.676 13.534-13.972 20.646-32.394 20.024-51.871zm-30.798 41.436c-10.688 11.035-25.032 17.112-40.389 17.112-.614 0-1.228-.01-1.847-.029-29.532-.943-53.404-24.815-54.348-54.348-.491-15.382 5.122-29.928 15.806-40.958 10.688-11.035 25.032-17.112 40.389-17.112.614 0 1.228.01 1.847.029 29.532.943 53.404 24.815 54.348 54.348.491 15.382-5.123 29.928-15.806 40.958z"/><path fill="black" d="M94.585 67.086 63.001 44.44c-3.369-2.416-8.059-.008-8.059 4.138v45.293c0 4.146 4.69 6.554 8.059 4.138l31.583-22.647c2.834-2.031 2.834-6.244.001-8.276z"/></svg></button></div>
+			</div>
+			<div class="controls">
+				<div class="slide-graph">
+					<span title="1"><span style="width: 25%;"></span></span>
+					<span title="2"><span style="width: 0%;"></span></span>
+					<span title="3"><span style="width: 0%;"></span></span>
+					<span title="4"><span style="width: 0%;"></span></span>
+				</div>
+				<div class="slide-controls">
+					<button id="playback" class="stopped">
+						<svg width="24" height="24" class="play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 485 485" style="enable-background:new 0 0 485 485" xml:space="preserve"><path fill="white" d="M413.974 71.026C368.171 25.225 307.274 0 242.5 0S116.829 25.225 71.026 71.026C25.225 116.829 0 177.726 0 242.5s25.225 125.671 71.026 171.474C116.829 459.775 177.726 485 242.5 485s125.671-25.225 171.474-71.026C459.775 368.171 485 307.274 485 242.5s-25.225-125.671-71.026-171.474zM242.5 455C125.327 455 30 359.673 30 242.5S125.327 30 242.5 30 455 125.327 455 242.5 359.673 455 242.5 455z"/><path fill="white" d="M181.062 336.575 343.938 242.5l-162.876-94.075z"/></svg>
+						<svg width="24" height="24" class="pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 485 485" style="enable-background:new 0 0 485 485" xml:space="preserve"><path fill="white" d="M413.974 71.026C368.171 25.225 307.274 0 242.5 0S116.829 25.225 71.026 71.026C25.225 116.829 0 177.726 0 242.5s25.225 125.671 71.026 171.474C116.829 459.775 177.726 485 242.5 485s125.671-25.225 171.474-71.026C459.775 368.171 485 307.274 485 242.5s-25.225-125.671-71.026-171.474zM242.5 455C125.327 455 30 359.673 30 242.5S125.327 30 242.5 30 455 125.327 455 242.5 359.673 455 242.5 455z"/><path fill="white" d="M172.5 140h55v205h-55zM257.5 140h55v205h-55z"/></svg>
+						<svg width="24" height="24" class="stop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30.05 30.05" style="enable-background:new 0 0 30.05 30.05" xml:space="preserve"><path fill="white" d="M18.993 10.688h-7.936a.342.342 0 0 0-.346.342v8.022c0 .189.155.344.346.344h7.936c.19 0 .344-.154.344-.344V11.03a.342.342 0 0 0-.344-.342z"/><path fill="white" d="M15.026 0C6.729 0 .001 6.726.001 15.025S6.729 30.05 15.026 30.05c8.298 0 15.023-6.726 15.023-15.025S23.324 0 15.026 0zm0 27.54c-6.912 0-12.516-5.604-12.516-12.515 0-6.914 5.604-12.517 12.516-12.517 6.913 0 12.514 5.603 12.514 12.517 0 6.911-5.601 12.515-12.514 12.515z"/></svg>
+					</button>
+					<span id="timestamp"><output>00:00</output> / <span>00:00</span> &middot; Slide <ins>1</ins></span>
+					<button id="fullscreen">
+						<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path fill="white" d="M5 5h5V3H3v7h2zm5 14H5v-5H3v7h7zm11-5h-2v5h-5v2h7zm-2-4h2V3h-7v2h5z"/></svg>
+					</button>
+				</div>
+			</div>
+		</div>
+
+	<script type="text/javascript">
+		// svg's from https://www.svgrepo.com/vectors/stop-button/
+		// https://addpipe.com/media-recorder-api-demo/
+		!function(t,e){"use strict";"object"==typeof module&&"object"==typeof module.exports?module.exports=e(t,document):"function"==typeof define&&define.amd?define(null,function(){e(t,document)}):t.rangetouch=e(t,document)}("undefined"!=typeof window?window:this,function(t,e){"use strict";function n(t){return t instanceof HTMLElement&&t.classList.contains(l.selectors.disabled)}function o(t,e,n){t.addEventListener(e,n,!1)}function i(t){var e=(""+t).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);return e?Math.max(0,(e[1]?e[1].length:0)-(e[2]?+e[2]:0)):0}function u(t,e){if(e<1){var n=i(e);return parseFloat(t.toFixed(n))}return Math.round(t/e)*e}function r(t){var e,n=t.target,o=t.changedTouches[0],i=parseFloat(n.getAttribute("min"))||0,r=parseFloat(n.getAttribute("max"))||100,a=parseFloat(n.getAttribute("step"))||1,c=r-i,s=n.getBoundingClientRect(),d=100/s.width*(l.thumbWidth/2)/100;return e=100/s.width*(o.clientX-s.left),e<0?e=0:e>100&&(e=100),e<50?e-=(100-2*e)*d:e>50&&(e+=2*(e-50)*d),i+u(c*(e/100),a)}function a(t){l.enabled&&"range"===t.target.type&&!n(t.target)&&(t.preventDefault(),t.target.value=r(t),s(t.target,t.type===l.events.end?"change":"input"))}function c(){o(e.body,l.events.start,a),o(e.body,l.events.move,a),o(e.body,l.events.end,a)}function s(t,e,n){t.dispatchEvent(new CustomEvent(e,n))}function d(){return[l.selectors.range,":not(.",l.selectors.disabled,")"].join("")}var l={enabled:!0,selectors:{range:'[type="range"]',disabled:"rangetouch--disabled"},thumbWidth:15,events:{start:"touchstart",move:"touchmove",end:"touchend"}};return function(){if("ontouchstart"in e.documentElement){for(var t=e.querySelectorAll(d()),n=t.length-1;n>=0;n--)t[n].style.touchAction="manipulation",t[n].style.webkitUserSelect="none";c()}}(),{set:function(t,e){l[t]=e}}}),function(){"use strict";function t(t,e){e=e||{bubbles:!1,cancelable:!1,detail:void 0};var n=document.createEvent("CustomEvent");return n.initCustomEvent(t,e.bubbles,e.cancelable,e.detail),n}if("function"==typeof window.CustomEvent)return!1;t.prototype=window.Event.prototype,window.CustomEvent=t}();
+			var domReady=function(d){var b=!1,e=function(){document.addEventListener?(document.removeEventListener("DOMContentLoaded",a),window.removeEventListener("load",a)):(document.detachEvent("onreadystatechange",a),window.detachEvent("onload",a))},a=function(){b||!document.addEventListener&&"load"!==event.type&&"complete"!==document.readyState||(b=!0,e(),d())};if("complete"===document.readyState)d();else if(document.addEventListener)document.addEventListener("DOMContentLoaded",a),window.addEventListener("load",
+			a);else{document.attachEvent("onreadystatechange",a);window.attachEvent("onload",a);var c=!1;try{c=null==window.frameElement&&document.documentElement}catch(g){}c&&c.doScroll&&function f(){if(!b){try{c.doScroll("left")}catch(a){return setTimeout(f,50)}b=!0;e();d()}}()}};
+
+		function debounce(b,f,c){var a;return function(){var d=this,e=arguments,g=c&&!a;clearTimeout(a);a=setTimeout(function(){a=null;c||b.apply(d,e)},f);g&&b.apply(d,e)}};
+
+		/*! * screenfull | * v5.1.0 - 2020-12-24 | * (c) Sindre Sorhus; MIT License */
+		!function(){"use strict";var c="undefined"!=typeof window&&void 0!==window.document?window.document:{},e="undefined"!=typeof module&&module.exports,s=function(){for(var e,n=[["requestFullscreen","exitFullscreen","fullscreenElement","fullscreenEnabled","fullscreenchange","fullscreenerror"],["webkitRequestFullscreen","webkitExitFullscreen","webkitFullscreenElement","webkitFullscreenEnabled","webkitfullscreenchange","webkitfullscreenerror"],["webkitRequestFullScreen","webkitCancelFullScreen","webkitCurrentFullScreenElement","webkitCancelFullScreen","webkitfullscreenchange","webkitfullscreenerror"],["mozRequestFullScreen","mozCancelFullScreen","mozFullScreenElement","mozFullScreenEnabled","mozfullscreenchange","mozfullscreenerror"],["msRequestFullscreen","msExitFullscreen","msFullscreenElement","msFullscreenEnabled","MSFullscreenChange","MSFullscreenError"]],l=0,r=n.length,t={};l<r;l++)if((e=n[l])&&e[1]in c){for(l=0;l<e.length;l++)t[n[0][l]]=e[l];return t}return!1}(),l={change:s.fullscreenchange,error:s.fullscreenerror},n={request:function(t,u){return new Promise(function(e,n){var l=function(){this.off("change",l),e()}.bind(this);this.on("change",l);var r=(t=t||c.documentElement)[s.requestFullscreen](u);r instanceof Promise&&r.then(l).catch(n)}.bind(this))},exit:function(){return new Promise(function(e,n){var l,r;this.isFullscreen?(l=function(){this.off("change",l),e()}.bind(this),this.on("change",l),(r=c[s.exitFullscreen]())instanceof Promise&&r.then(l).catch(n)):e()}.bind(this))},toggle:function(e,n){return this.isFullscreen?this.exit():this.request(e,n)},onchange:function(e){this.on("change",e)},onerror:function(e){this.on("error",e)},on:function(e,n){e=l[e];e&&c.addEventListener(e,n,!1)},off:function(e,n){e=l[e];e&&c.removeEventListener(e,n,!1)},raw:s};s?(Object.defineProperties(n,{isFullscreen:{get:function(){return Boolean(c[s.fullscreenElement])}},element:{enumerable:!0,get:function(){return c[s.fullscreenElement]}},isEnabled:{enumerable:!0,get:function(){return Boolean(c[s.fullscreenEnabled])}}}),e?module.exports=n:window.screenfull=n):e?module.exports={isEnabled:!1}:window.screenfull={isEnabled:!1}}();
+
+		/*!  * long-press-event - v2.4.4 |  * Pure JavaScript long-press-event |  * https://github.com/john-doherty/long-press-event |  * @author John Doherty <www.johndoherty.info> |  * @license MIT  */
+		!function(e,t){"use strict";var n=null,a="PointerEvent"in e||e.navigator&&"msPointerEnabled"in e.navigator,i="ontouchstart"in e||navigator.MaxTouchPoints>0||navigator.msMaxTouchPoints>0,o=a?"pointerdown":i?"touchstart":"mousedown",r=a?"pointerup":i?"touchend":"mouseup",m=a?"pointermove":i?"touchmove":"mousemove",u=0,s=0,c=10,l=10;function v(e){f(),e=function(e){if(void 0!==e.changedTouches)return e.changedTouches[0];return e}(e),this.dispatchEvent(new CustomEvent("long-press",{bubbles:!0,cancelable:!0,detail:{clientX:e.clientX,clientY:e.clientY},clientX:e.clientX,clientY:e.clientY,offsetX:e.offsetX,offsetY:e.offsetY,pageX:e.pageX,pageY:e.pageY,screenX:e.screenX,screenY:e.screenY}))||t.addEventListener("click",function e(n){t.removeEventListener("click",e,!0),function(e){e.stopImmediatePropagation(),e.preventDefault(),e.stopPropagation()}(n)},!0)}function d(a){f(a);var i=a.target,o=parseInt(function(e,n,a){for(;e&&e!==t.documentElement;){var i=e.getAttribute(n);if(i)return i;e=e.parentNode}return a}(i,"data-long-press-delay","1500"),10);n=function(t,n){if(!(e.requestAnimationFrame||e.webkitRequestAnimationFrame||e.mozRequestAnimationFrame&&e.mozCancelRequestAnimationFrame||e.oRequestAnimationFrame||e.msRequestAnimationFrame))return e.setTimeout(t,n);var a=(new Date).getTime(),i={},o=function(){(new Date).getTime()-a>=n?t.call():i.value=requestAnimFrame(o)};return i.value=requestAnimFrame(o),i}(v.bind(i,a),o)}function f(t){var a;(a=n)&&(e.cancelAnimationFrame?e.cancelAnimationFrame(a.value):e.webkitCancelAnimationFrame?e.webkitCancelAnimationFrame(a.value):e.webkitCancelRequestAnimationFrame?e.webkitCancelRequestAnimationFrame(a.value):e.mozCancelRequestAnimationFrame?e.mozCancelRequestAnimationFrame(a.value):e.oCancelRequestAnimationFrame?e.oCancelRequestAnimationFrame(a.value):e.msCancelRequestAnimationFrame?e.msCancelRequestAnimationFrame(a.value):clearTimeout(a)),n=null}"function"!=typeof e.CustomEvent&&(e.CustomEvent=function(e,n){n=n||{bubbles:!1,cancelable:!1,detail:void 0};var a=t.createEvent("CustomEvent");return a.initCustomEvent(e,n.bubbles,n.cancelable,n.detail),a},e.CustomEvent.prototype=e.Event.prototype),e.requestAnimFrame=e.requestAnimationFrame||e.webkitRequestAnimationFrame||e.mozRequestAnimationFrame||e.oRequestAnimationFrame||e.msRequestAnimationFrame||function(t){e.setTimeout(t,1e3/60)},t.addEventListener(r,f,!0),t.addEventListener(m,function(e){var t=Math.abs(u-e.clientX),n=Math.abs(s-e.clientY);(t>=c||n>=l)&&f()},!0),t.addEventListener("wheel",f,!0),t.addEventListener("scroll",f,!0),t.addEventListener(o,function(e){u=e.clientX,s=e.clientY,d(e)},!0)}(window,document);
+
+		// scorm 1.2 & 2004 combined functions
+		function learnerWillReturn(a){"API_1484_11"==_sAPI?a?scormSetValue("cmi.exit","suspend"):scormSetValue("cmi.exit","normal"):"API"==_sAPI&&(a?scormSetValue("cmi.core.exit","suspend"):scormSetValue("cmi.core.exit",""))}
+		function isFirstLaunch(){if("API_1484_11"==_sAPI)var a=scormGetValue("cmi.entry");else if("API"==_sAPI)a=scormGetValue("cmi.core.entry");else return!0;return"ab-initio"!=a?!1:!0}
+		function startSessionTime(){return _timeSessionStart=new Date}
+		function setSessionTime(a){var b=(new Date).getTime();a=Math.round((b-a)/1E3);a=formatTime(a);"API_1484_11"==_sAPI?scormSetValue("cmi.session_time",a):"API"==_sAPI&&scormSetValue("cmi.core.session_time",a)}
+		function getBookmark(){return"API_1484_11"==_sAPI?scormGetValue("cmi.location"):"API"==_sAPI?scormGetValue("cmi.core.lesson_location"):""}
+		function setBookmark(a){"API_1484_11"==_sAPI?scormSetValue("cmi.location",a+""):"API"==_sAPI&&scormSetValue("cmi.core.lesson_location",a+"")}
+		function getSuspendData(){return"API_1484_11"==_sAPI||"API"==_sAPI?scormGetValue("cmi.suspend_data"):""}
+		function setSuspendData(a){"API_1484_11"!=_sAPI&&"API"!=_sAPI||scormSetValue("cmi.suspend_data",a+"")}
+		function setCompletionStatus(a){if("API_1484_11"==_sAPI)scormSetValue("cmi.completion_status",a+"");else if("API"==_sAPI&&("completed"==a||"incomplete"==a||"not attempted"==a)){var b=scormGetValue("cmi.core.lesson_status");"passed"==b||"failed"==b?"incomplete"!=a&&"not attempted"!=a||scormSetValue("cmi.core.lesson_status",a+""):scormSetValue("cmi.core.lesson_status",a+"")}}
+		function getCompletionStatus(){if("API_1484_11"==_sAPI)return scormGetValue("cmi.completion_status");if("API"==_sAPI){var a=scormGetValue("cmi.core.lesson_status");return"passed"==a||"failed"==a?"completed":a}return"not attempted"}
+		function setPassFail(a){"API_1484_11"==_sAPI?scormSetValue("cmi.success_status",a+""):"API"==_sAPI&&scormSetValue("cmi.core.lesson_status",a+"")}
+		function setScore(a){if("API_1484_11"==_sAPI)scormSetValue("cmi.score.scaled",a+"");else if("API"==_sAPI){scormSetValue("cmi.core.score.min","0");scormSetValue("cmi.core.score.max","100");var b=100*a;100<b&&(b=100);0>a-0?scormSetValue("cmi.core.score.raw","0"):scormSetValue("cmi.core.score.raw",Math.round(b)+"")}}
+		function scormInitialize(){var a=getAPI();if(null==a)return"false";a="API"==_sAPI?a.LMSInitialize(""):a.Initialize("");return a}
+		function scormTerminate(){var a=getAPI();if(null==a)return"false";a="API"==_sAPI?a.LMSFinish(""):a.Terminate("");return a}
+		function scormCommit(){var a=getAPI();if(null==a)return"false";a="API"==_sAPI?a.LMSCommit(""):a.Commit("");return a}
+		function scormGetValue(a){var b=getAPI();if(null==b)return"";if("API"==_sAPI)var c=b.LMSGetValue(a),b=b.LMSGetLastError();else c=b.GetValue(a),b=b.GetLastError();return"0"!=b?"":c}
+		function scormSetValue(a,b){var c=getAPI();if(null==c)return"true";c="API"==_sAPI?c.LMSSetValue(a,b):c.SetValue(a,b);return c}
+		function formatTime(a){var b=Math.floor(a/3600);a-=3600*b;var c=Math.floor(a/60);a-=60*c;return"API_1484_11"==_sAPI?"PT"+b+"H"+c+"M"+a+"S":"API"==_sAPI?(10>b&&(b="0"+b),10>c&&(c="0"+c),10>a&&(a="0"+a),b+":"+c+":"+a):""}
+		function findAPI(a,b){var c=0;try{for(;null==a[b]&&null!=a.parent&&a.parent!=a;){c++;if(7<c)return console.log("findAPI gave up",a,b),null;a=a.parent}}catch(d){return console.log("findAPI forced to stop at domain boundary",a,b),null}return a[b]}
+		function getAPI(){if(null!=apiHandle)return apiHandle;var a=findAPI(window,"API_1484_11");null==a&&null!=window.opener&&"undefined"!=typeof window.opener&&(a=findAPI(window.opener,"API_1484_11"));null==a?(a=findAPI(window,"API"),null==a&&null!=window.opener&&"undefined"!=typeof window.opener&&(a=findAPI(window.opener,"API")),null!=a&&(_sAPI="API")):_sAPI="API_1484_11";return a};
+		Math.clip = function(n,i,x){return Math.max(i,Math.min(n,x));}
+		function HHMMSS(s) {
+			var date = new Date(1970,0,1);
+			date.setSeconds(s);
+			result = (date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1"));
+			return result.replace(/^00:/,"");
+		}
+
+		scormInitialize();
+
+		var slides = {{slides}};
+
+		var apiHandle = (parent && parent !== self && parent.ninjaApiProxy) ? parent.ninjaApiProxy : getAPI(),
+			slideDOM = [],
+			currentSlide = 0,
+			timeAccumulated = 0,
+			playing = 0,
+			started = 0;
+
+		var slideGraph = document.querySelector(".slide-graph"),
+			playButton = document.getElementById("playback"),
+			startButton = document.getElementById("start"),
+			fullscreenButton = document.getElementById("fullscreen"),
+			slideImage = document.getElementById("slide"),
+			slideMedia = document.getElementById("media"),
+			timeDisplay = document.querySelector("#timestamp>output"),
+			timeTotal = document.querySelector("#timestamp>span"),
+			slideNumber = document.querySelector("#timestamp>ins");
+
+		slideMedia.volume = 1;
+		slideMedia.addEventListener("timeupdate", timeupdateEvent, false);
+		slideMedia.addEventListener("play", playEvent);
+		slideMedia.addEventListener("pause", pauseEvent);
+		slideMedia.addEventListener("ended", endedEvent);
+
+		slideGraph.innerHTML = "";
+		for (var i=0; i<slides.length; i++) {
+			var slide = slides[i];
+
+			slides[i].duration = slides[i].duration / 1000;
+
+			var sp = document.createElement("span");
+			sp.title = i+1;
+			sp.onclick = gotoSlide;
+			sp.dataset.index = i;
+			var isp = document.createElement("span");
+			isp.style = "width:0%";
+			sp.appendChild(isp);
+			slideGraph.appendChild(sp);
+			slideDOM[i] = isp;
+			var img = new Image();
+			img.src = slide.image;
+
+			// time up to this slide
+			slides[i].currentTotalTime = timeAccumulated;
+
+			// total time for all slides (accumulative)
+			timeAccumulated += slides[i].duration;
+
+			Object.defineProperty(slides[i], "time", {
+				configurable: false,
+				get: function () {
+					return typeof _ts !== "undefined" ? _ts : 0;
+				},
+				set: function (value) {
+					_ts = value;
+					let pc = Math.round(_ts / slides[currentSlide].duration * 100);
+					slideDOM[currentSlide].style.width = pc + "%";
+				}
+			});
+		}
+
+		timeTotal.textContent = HHMMSS(timeAccumulated);
+
+		function playEvent() {
+			playButton.setAttribute("class","playing");
+		}
+
+		function pauseEvent() {
+			playButton.setAttribute("class","paused");
+		}
+
+		function timeupdateEvent() {
+			let ctime = slideMedia.currentTime;
+			slides[currentSlide].time = slideMedia.currentTime;
+			timeDisplay.textContent = HHMMSS(slides[currentSlide].currentTotalTime + slideMedia.currentTime);
+		}
+
+		function showSlide() {
+			started = 1;
+			slideImage.src = slides[currentSlide].image;
+			slideMedia.src = slides[currentSlide].media;
+			slideMedia.currentTime = 0;
+			slideMedia.play();
+			slideNumber.textContent = currentSlide + 1;
+		}
+
+		slideMedia.addEventListener("click", function (event) {
+			event.target.classList.toggle("alt");
+		});
+
+		slideMedia.addEventListener("long-press", function (event) {
+			event.preventDefault();
+			event.target.classList.toggle("big");
+		});
+
+		startButton.addEventListener("click", function (event) {
+			playing = 1;
+			showSlide(0);
+		});
+
+		playButton.addEventListener("click", function (event) {
+			if (playing) {
+				slideMedia.pause();
+				playing = 0;
+			} else {
+				slideMedia.play();
+				playing = 1;
+			}
+		});
+
+		if (screenfull.isEnabled) {
+			fullscreenButton.addEventListener("click", function(e) {
+				screenfull.toggle();
+			});
+		} else {
+			fullscreenButton.style.display = "none";
+		}
+
+		function gotoSlide() {
+			let el = this.previousElementSibling;
+			while (el) {
+				el.querySelector("span").style.width = "100%";
+				el = el.previousElementSibling;
+			}
+			currentSlide = parseInt(this.dataset.index, 10);
+			showSlide();
+		}
+
+		function endedEvent() {
+			if (currentSlide < slides.length - 1) {
+				slideDOM[currentSlide].style.width ="100%";
+				currentSlide++;
+				showSlide();
+			} else if (currentSlide === slides.length - 1) {
+				finish();
+			}
+		}
+
+		function finish() {
+			playButton.setAttribute("class","stopped");
+		}
+
+
+			// // Selectors
+			// var	HtmlAudioObject = document.getElementById("page-audio-obj"),
+			// 	HtmlFrameObject = document.getElementById("presentation"),
+			// 	ProgressPlayed = document.querySelector(".progress-bar-played"),
+			// 	CurrentTime = document.querySelector(".current-time"),
+			// 	PreviousSlide = document.querySelector("#prevSlide"),
+			// 	PlayPause = document.querySelector("#playPause"),
+			// 	NextSlide = document.querySelector("#nextSlide"),
+			// 	Fullscreen = document.getElementById("fullscreen"),
+			// 	AudioVolume = document.getElementById("volumeSlider"),
+			// 	ChapterContainer = document.getElementById("slidesContainer"),
+			// 	Chapters = ChapterContainer.querySelectorAll("div");
+
+
+			// var _bDebug=0,_sAPI="",
+			// 	apiHandle = (parent && parent !== self && parent.ninjaApiProxy) ? parent.ninjaApiProxy : getAPI(),
+			// 	_timeSessionStart=null,
+			// 	_timeout,
+			// 	_now,
+			// 	_unloaded = false,
+			// 	_currentSlide = 0,
+			// 	Course = {
+			// 		Required: {{score}},
+			// 		Duration: {{duration}},
+			// 		_timestamp: 0,
+			// 		Score: 0,
+			// 		Completed: false,
+			// 		SetComplete: function () {
+			// 			if (!Course.Completed) {
+			// 				learnerWillReturn(false);
+			// 				if ("API_1484_11"==_sAPI) setPassFail("passed");
+			// 				setCompletionStatus("completed");
+			// 				setScore(Course.Score/100);
+			// 				scormCommit();
+			// 				Course.Completed = true;
+			// 				return true;
+			// 			}
+			// 			return false;
+			// 		},
+			// 		PlayerState: "not-started"
+			// 	};
+
+			// Object.defineProperty(HtmlAudioObject, "begun", {
+			// 	get: function() {
+			// 		return !!(this.currentTime > 0 && !this.ended && this.readyState > 2);
+			// 	}
+			// });
+
+			// Object.defineProperty(HtmlAudioObject, "playing", {
+			//     get: function() {
+			//         return !!(this.currentTime > 0 && !this.paused && !this.ended && this.readyState > 2);
+			//     }
+			// });
+
+			// Object.defineProperty(Course, "Seconds", {
+			// 	configurable: false,
+			// 	get: function () {
+			// 		return typeof _timestamp !== "undefined" ? _timestamp : 0;
+			// 	},
+			// 	set: function (value) {
+			// 		// var totaltime = scormGetValue("cmi.total_time");
+			// 		_timestamp = value; //audio scrub timestamp
+			// 		setBookmark("" + Math.round(value)); // persist where we are up to; but commit later
+			// 		if (!isFirstLaunch() && getCompletionStatus() == "completed") {
+			// 			Course.Completed = true; //  bypass setComplete (reset score)
+			// 		}
+			// 		var newScore = (100 / Chapters.length) * (~~ChapterContainer.querySelector(".current").dataset.slide + 1);
+			// 		if (newScore > getSuspendData()) {
+			// 			Course.Score =  newScore;
+			// 			setSuspendData(Course.Score);
+			// 			setScore(Course.Score / 100);
+			// 		}
+			// 		if (Course.Score >= Course.Required && getCompletionStatus() !== "completed") {
+			// 			Course.SetComplete(); // true if record was changed
+			// 		}
+			// 	}
+			// });
+
+			// // public method called by body unload event(s)
+			// function doUnload() {
+			// 	if (!_unloaded) {
+			// 		scormCommit();
+			// 		setSessionTime(_timeSessionStart);
+			// 		scormTerminate();
+			// 		_unloaded = true;
+			// 	}
+			// }
+
+			// function togglePlay() {
+			// 	setIframesFs();
+			// 	if (!HtmlAudioObject.begun) {
+			// 		HtmlAudioObject.play();
+			// 		PlayPause.querySelector('i').textContent = "pause"
+			// 	} else if (HtmlAudioObject.playing) {
+			// 		HtmlAudioObject.pause();
+			// 		PlayPause.querySelector('i').textContent = "play_arrow";
+			// 	} else if (!HtmlAudioObject.playing) {
+			// 		HtmlAudioObject.play();
+			// 		PlayPause.querySelector('i').textContent = "pause";
+			// 	}
+			// }
+
+
+			// AudioVolume.addEventListener("input", function(e) {
+			// 	HtmlAudioObject.volume = ~~e.target.value/100;
+			// }, false);
+
+			// PlayPause.addEventListener("click", function (e) {
+			// 	togglePlay();
+			// }, false);
+
+			// PreviousSlide.addEventListener("click", function(e) {
+			// 	if (_currentSlide > 0) {
+			// 		_currentSlide--;
+			// 		HtmlFrameObject.setAttribute("src", "data/" + Chapters[_currentSlide].dataset.fileid + ".html");
+			// 		HtmlAudioObject.currentTime = Chapters[_currentSlide].dataset.cue;
+			// 		CurrentTime.textContent = HHMMSS(HtmlAudioObject.currentTime);
+			// 		setProgressBar();
+			// 	}
+			// });
+
+			// NextSlide.addEventListener("click", function(e) {
+			// 	if (_currentSlide < Chapters.length - 1) {
+			// 		_currentSlide++;
+			// 		HtmlFrameObject.setAttribute("src", "data/" + Chapters[_currentSlide].dataset.fileid + ".html");
+			// 		HtmlAudioObject.currentTime = Chapters[_currentSlide].dataset.cue;
+			// 		CurrentTime.textContent = HHMMSS(HtmlAudioObject.currentTime);
+			// 		setProgressBar();
+			// 	}
+			// });
+			// if (!screenfull.enabled) {
+			// 	screenfull.on('error', function(e) {
+			// 		console.warn('Failed to enable fullscreen: ', e);
+			// 	});
+			// 	try {
+			// 		setIframesFs();
+			// 	} catch(error) {
+			// 		console.log("Couldn't enable fullscreen: " + error);
+			// 	}
+			// }
+			// if (screenfull.enabled) {
+			// 	Fullscreen.addEventListener("click", function(e) {
+			// 		// var requestFullScreen = HtmlFrameObject.requestFullscreen || HtmlFrameObject.msRequestFullscreen || HtmlFrameObject.mozRequestFullScreen || HtmlFrameObject.webkitRequestFullscreen;
+			// 		// requestFullScreen.call(HtmlFrameObject);
+			// 		screenfull.toggle(document.querySelector('content-wrapper'));
+			// 	});
+			// } else {
+			// 	Fullscreen.style.display = "none";
+			// }
+
+			// AudioVolume.addEventListener("input", function(e) {
+			// 	HtmlAudioObject.volume = ~~e.target.value/100;
+			// }, false);
+
+			// document.addEventListener("keydown", function(e) {
+			// 	e.preventDefault();
+			// 	if (e.code === "Space") {togglePlay();}
+			// });
+
+			// function HHMMSS(seconds) {
+			//     var date = new Date(1970,0,1);
+			//     date.setSeconds(seconds);
+			//     result = (date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1"));
+			//     return result.replace(/^00:/,"");
+			// }
+
+			// function setProgressBar() {
+			// 	var percent = HtmlAudioObject.currentTime / HtmlAudioObject.duration * 100;
+			// 	ProgressPlayed.style.width = percent + "%";
+			// }
+
+			// function _do_time_update(e) {
+			// 	CurrentTime.textContent = HHMMSS(HtmlAudioObject.currentTime);
+			// 	Course.Seconds = HtmlAudioObject.currentTime;
+			// 	setProgressBar();
+			// 	for (var i=0; i < Chapters.length; i++) {
+			// 		var start = Chapters[i].dataset.cue,
+			// 			end = Chapters[i+1] ? Chapters[i+1].dataset.cue : Course.Duration;
+			// 			if (HtmlAudioObject.currentTime >= start && HtmlAudioObject.currentTime <= end) {
+			// 				if (!Chapters[i].classList.contains("current")) {
+			// 					_currentSlide = i;
+			// 					HtmlFrameObject.setAttribute("src", "data/" + Chapters[i].dataset.fileid + ".html");
+			// 					[].forEach.call(Chapters,function(n) {
+			// 						n.classList[n===Chapters[i]?"add":"remove"]("current");
+			// 					});
+			// 				}
+			// 			}
+			// 	}
+			// }
+
+			// domReady(function () {
+			// 	startSessionTime();
+			// 	setCompletionStatus("incomplete");
+			// 	learnerWillReturn(true);
+			// 	scormCommit();
+			// 	document.querySelector('.total-time').textContent = HHMMSS(Course.Duration);
+
+			// 	var bm = ~~getBookmark();
+			// 	if (!isFirstLaunch() && bm>0) {
+			// 		HtmlAudioObject.currentTime = bm;
+			// 		_do_time_update();
+			// 	}
+			// });
+
+		</script>
+
+	</body>
+</html>

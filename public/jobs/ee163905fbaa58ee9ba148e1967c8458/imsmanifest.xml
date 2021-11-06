@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<manifest identifier="com.to-scorm.slides.I1636176688" version="1"
+       xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+       xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                           http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
+                           http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="O1636176688">
+    <organization identifier="O1636176688">
+      <title>ready to test again</title>
+      <item identifier="I1636176688" identifierref="R1636176688" isvisible="true">
+        <title>ready to test again</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="R1636176688" type="webcontent" adlcp:scormtype="sco" href="index.html">
+    <file href='adlcp_rootv1p2.xsd' />
+<file href='gslide-0.jpg' />
+<file href='gslide-1.jpg' />
+<file href='gslide-10.jpg' />
+<file href='gslide-11.jpg' />
+<file href='gslide-12.jpg' />
+<file href='gslide-13.jpg' />
+<file href='gslide-2.jpg' />
+<file href='gslide-3.jpg' />
+<file href='gslide-4.jpg' />
+<file href='gslide-5.jpg' />
+<file href='gslide-6.jpg' />
+<file href='gslide-7.jpg' />
+<file href='gslide-8.jpg' />
+<file href='gslide-9.jpg' />
+<file href='ims_xml.xsd' />
+<file href='imscp_rootv1p1p2.xsd' />
+<file href='imsmanifest.xml' />
+<file href='imsmd_rootv1p2p1.xsd' />
+<file href='index.html' />
+<file href='recording-1.mp3' />
+<file href='recording-10.mp3' />
+<file href='recording-11.mp3' />
+<file href='recording-12.mp3' />
+<file href='recording-13.mp3' />
+<file href='recording-14.mp3' />
+<file href='recording-2.mp3' />
+<file href='recording-3.mp3' />
+<file href='recording-4.mp3' />
+<file href='recording-5.mp3' />
+<file href='recording-6.mp4' />
+<file href='recording-7.mp3' />
+<file href='recording-8.mp3' />
+<file href='recording-9.mp3' />
+<file href='slides.json' />
+    </resource>
+  </resources>
+</manifest>

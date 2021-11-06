@@ -1,0 +1,109 @@
+html {
+    box-sizing: border-box;
+    font-size: 62.5%; 
+    line-height: 1.15;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    color: #606c76;
+    font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-size: 1.6em;
+    font-weight: 300;
+    letter-spacing: .01em;
+    line-height: 1.6;
+    margin: 0;
+}
+
+header {
+    background-color: #506849;
+    color: #fff;
+    padding: 1rem 2rem;
+}
+h3,h4,
+header>* {
+    margin: 0;
+}
+
+.slide-index, main {
+    margin: 0 2rem;
+}
+
+button, input[type='submit'] {
+    min-width: 150px;
+    padding: 10px;
+    display: inline-block;
+    margin: 20px auto;
+    border: 2px solid #113355;
+    cursor: pointer;
+    background-color: #eeeeee;
+}
+
+footer {
+    font-size: .9rem;
+    margin-top: 1rem;
+}
+
+.download-package,
+footer,
+.slide-container {
+    text-align: center;
+}
+
+.slide-image {
+    border: 2px solid #113355;
+}
+
+.download-package {
+    padding-top: 1rem;
+    background-color: lightgreen;
+}
+
+.slide-image img {
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+.slide-image {
+    position: relative;
+}
+
+#media {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    max-width: 25%;
+}
+
+.record-media.recording .video-control,
+.record-media.recording .slide-image video#media,
+.record-media.recording button[data-action='audio'] {
+    animation: blink 1s;
+    animation-iteration-count: infinite;
+    box-shadow: 0 0 10px red;
+}
+
+#video_feedback:not(:empty) {
+    display: block;
+}
+
+video#media {
+    box-shadow: 0 0 10px #000000;
+}
+
+#start-record, #stop-record, #audio-control {
+    display: none;
+}
+
+.download-package label {
+    margin-top: .5rem;
+    display: block;
+}
+.download-package label input {
+    padding: .5rem;
+}
+ 
+
+@keyframes blink { 50% { box-shadow: 0 0 10px #000000; }  }
