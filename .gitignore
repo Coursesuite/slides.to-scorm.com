@@ -1,4 +1,4 @@
-jobs/*
+public/jobs/*
 .DS_Store
 api.key
 
