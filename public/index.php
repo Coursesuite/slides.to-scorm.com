@@ -48,7 +48,8 @@ if (isset($_POST['reset']) || isset($_GET['reset'])) {
 
 // create a new project when required
 if (!isset($_SESSION['workingdir'])) {
-    $_SESSION['workingdir'] = md5(time() . rand(0, 9999));
+    $id = md5(time() . rand(0, 9999));
+    $_SESSION['workingdir'] = $id;
 }
 
 // current project id is persisted through querystring
@@ -478,7 +479,9 @@ if (is_array($SlideArray)) {
 <?php if ($step === 0) { ?>
 
         <section class="intro">
-            <p>Upload a presentation (ppt, pptx, keynote or ods) or google slides. Then upload or record audio or video to each slide. Then you can download a SCORM-compatible zip file. When played, the slides will automatically turn when the media finishes playing.</p>
+            <p>Upload a presentation (ppt, pptx, keynote or ods) or google slides. Then upload or record audio or video to each slide. Then you can download a SCORM-compatible zip file. When played, the slides will automatically change when the video or audio finishes playing. A SCORM completion occurs when the last slide finishes playing.</p>
+			<p>Sometimes Google Slides don't convert properly. If this happens, export them as PPTX or PDF and upload as a file instead.</p>
+			<p>For slides that have video, you can tap the video to change its position, or press-and-hold to change its size (at runtime, not in this editor).</p>
         </section>
 
         <section class="convert-slides">
