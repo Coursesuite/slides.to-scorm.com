@@ -80,7 +80,7 @@
 		// scorm 1.2 & 2004 combined functions
 		function learnerWillReturn(a){"API_1484_11"==_sAPI?a?scormSetValue("cmi.exit","suspend"):scormSetValue("cmi.exit","normal"):"API"==_sAPI&&(a?scormSetValue("cmi.core.exit","suspend"):scormSetValue("cmi.core.exit",""))}
 		function isFirstLaunch(){if("API_1484_11"==_sAPI)var a=scormGetValue("cmi.entry");else if("API"==_sAPI)a=scormGetValue("cmi.core.entry");else return!0;return"ab-initio"!=a?!1:!0}
-		function startSessionTime(){return _timeSessionStart=new Date}
+		function startSessionTime(){return _timeSessionStart=(new Date()).getTime()}
 		function setSessionTime(a){var b=(new Date).getTime();a=Math.round((b-a)/1E3);a=formatTime(a);"API_1484_11"==_sAPI?scormSetValue("cmi.session_time",a):"API"==_sAPI&&scormSetValue("cmi.core.session_time",a)}
 		function getBookmark(){return"API_1484_11"==_sAPI?scormGetValue("cmi.location"):"API"==_sAPI?scormGetValue("cmi.core.lesson_location"):""}
 		function setBookmark(a){"API_1484_11"==_sAPI?scormSetValue("cmi.location",a+""):"API"==_sAPI&&scormSetValue("cmi.core.lesson_location",a+"")}
@@ -110,12 +110,15 @@
 
 		var slides = {{slides}};
 
-		var apiHandle = (parent && parent !== self && parent.ninjaApiProxy) ? parent.ninjaApiProxy : getAPI(),
+		var _sAPI,
+			apiHandle = (parent && parent !== self && parent.ninjaApiProxy) ? parent.ninjaApiProxy : getAPI(),
 			slideDOM = [],
 			currentSlide = 0,
 			timeAccumulated = 0,
 			playing = 0,
-			started = 0;
+			started = 0,
+			_unloaded = false,
+			_timeSessionStart = 0;
 
 		var slideGraph = document.querySelector(".slide-graph"),
 			playButton = document.getElementById("playback"),
@@ -171,6 +174,7 @@
 		}
 
 		timeTotal.textContent = HHMMSS(timeAccumulated);
+		startSessionTime();
 
 		function playEvent() {
 			playButton.setAttribute("class","playing");
@@ -193,6 +197,7 @@
 			slideMedia.currentTime = 0;
 			slideMedia.play();
 			slideNumber.textContent = currentSlide + 1;
+			setBookmark("" + currentSlide);
 		}
 
 		slideMedia.addEventListener("click", function (event) {
@@ -249,6 +254,22 @@
 
 		function finish() {
 			playButton.setAttribute("class","stopped");
+
+			learnerWillReturn(false);
+			if ("API_1484_11"==_sAPI) setPassFail("passed");
+			setCompletionStatus("completed");
+			setScore(1);
+			scormCommit();
+		}
+
+		function doUnload() {
+			if (!_unloaded) {
+				var t = (new Date()).getTime();
+				setSessionTime(t - _timeSessionStart);
+				scormCommit();
+				scormTerminate();
+				_unloaded = true;
+			}
 		}
 
 		</script>
