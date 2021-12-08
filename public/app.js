@@ -6,6 +6,8 @@ App.init = function() {
   const audio_button = document.querySelector("button[data-action='audio']");
   const record_button = document.querySelector("button[data-action='record']");
   const upload_button = document.querySelector("button[data-action='upload']");
+  const canvas = document.querySelector("canvas.visualiser");
+  const timer = document.querySelector("span.timer");
 
   const div = document.querySelector(".record-media");
 
@@ -20,6 +22,7 @@ App.init = function() {
   let audio_recorder = null;
   let start_time = null;
   let duration = 0;
+  let timer_interval = null;
 
   let mediaType = "video/webm",
       mediaExtn = "webm",
@@ -50,6 +53,7 @@ App.init = function() {
       record_button.style.display = "none";
       upload_button.style.display = "none";
       audio_button.style.display = "none";
+      canvas.style.display = "none";
       document.querySelector("form.upload").removeAttribute("hidden");
       document.querySelector("form.upload input[type='submit']").removeAttribute("hidden");
     });
@@ -60,6 +64,7 @@ App.init = function() {
       record_button.style.display = "none";
       upload_button.style.display = "none";
       audio_button.style.display = "none";
+      canvas.style.display = "none";
       document.querySelector("form.upload").removeAttribute("hidden");
 
       let upl = document.querySelector("form.upload input[type='file']");
@@ -89,8 +94,6 @@ App.init = function() {
   }
 
   if (start_button) {
-
-
 
     start_button.addEventListener('click', function() {
       media_recorder = new MediaRecorder(camera_stream, cameraOptions);
@@ -155,26 +158,40 @@ App.init = function() {
   function recordAudio() {
       record_button.style.display = "none";
       upload_button.style.display = "none";
+      document.querySelector("#video_feedback").innerHTML = "";
 
       let upl = document.querySelector("form.upload input[type='file']");
-      upl.parentNode.removeChild(upl);
+      if (upl) upl.parentNode.removeChild(upl);
+      startTimer();
 
       audio_recorder.start().then(() => {
         audio_button.textContent = 'Stop recording';
         div.classList.add("recording");
+
+        canvas.style.display = 'inline-block';
+        visualize(canvas, audio_recorder.activeStream);
+
+        // swap the button listener to stop recording action
         audio_button.removeEventListener('click', recordAudio);
         audio_button.addEventListener('click', stopAudio);
       }).catch((e) => {
-        console.error(e);
+        console.dir(e);
+        alert('Could not start recording.');
+        stopTimer();
       });
   }
 
   function stopAudio() {
+      stopTimer();
       audio_recorder.stop().getMp3().then(([buffer, blob]) => {
         const file = new File(buffer, 'recording-' + page + '.mp3', {
           type: blob.type,
           lastModified: Date.now()
         });
+
+        // swap the button listener back to start recording action
+        audio_button.removeEventListener('click', stopAudio);
+        audio_button.addEventListener('click', recordAudio);
 
         const player = new Audio(URL.createObjectURL(file));
         player.controls = true;
@@ -209,7 +226,88 @@ App.init = function() {
 
   }
 
+  function startTimer() {
+    timer.textContent = HHMMSS(0);
+    timer.style.padding = "1rem";
+    timer_interval = setInterval(function() {
+      let t = ~~timer.dataset.seconds;
+      t++;
+      timer.dataset.seconds = t;
+      timer.textContent = HHMMSS(t);
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timer_interval) clearInterval(timer_interval);
+    timer.style.padding = "0";
+    timer.textContent = "";
+    timer.dataset.seconds = 0;
+  }
+
 };
+
+
+
+function visualize(canvas, stream) {
+  var audioCtx = new (window.AudioContext || webkitAudioContext)();
+  var source = audioCtx.createMediaStreamSource(stream);
+  var canvasCtx = canvas.getContext("2d");
+  var analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  var bufferLength = analyser.frequencyBinCount;
+  var dataArray = new Uint8Array(bufferLength);
+
+  source.connect(analyser);
+  //analyser.connect(audioCtx.destination);
+
+  draw()
+
+  function draw() {
+    WIDTH = canvas.width
+    HEIGHT = canvas.height;
+
+    requestAnimationFrame(draw);
+
+    analyser.getByteTimeDomainData(dataArray);
+
+    canvasCtx.fillStyle = 'rgb(255, 255, 255)';
+    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = 'rgb(127, 127, 127)';
+
+    canvasCtx.beginPath();
+
+    var sliceWidth = WIDTH * 1.0 / bufferLength;
+    var x = 0;
+
+
+    for(var i = 0; i < bufferLength; i++) {
+
+      var v = dataArray[i] / 128.0;
+      var y = v * HEIGHT/2;
+
+      if(i === 0) {
+        canvasCtx.moveTo(x, y);
+      } else {
+        canvasCtx.lineTo(x, y);
+      }
+
+      x += sliceWidth;
+    }
+
+    canvasCtx.lineTo(canvas.width, canvas.height/2);
+    canvasCtx.stroke();
+
+  }
+}
+
+function HHMMSS(seconds) {
+    var date = new Date(1970,0,1), result;
+    date.setSeconds(seconds);
+    result = (date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1"));
+    return result.replace(/^00:/,'');
+}
 
 window.addEventListener('DOMContentLoaded', (event) => {
   App.init();

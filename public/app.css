@@ -66,6 +66,15 @@ footer,
     margin: 0 auto;
 }
 
+.slide-image .timer {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0,0,0,.5);
+    color: white
+}
+
 .slide-image {
     position: relative;
 }
@@ -104,6 +113,11 @@ video#media {
 .download-package label input {
     padding: .5rem;
 }
- 
+
+.visualiser {
+    display: none;
+    margin-left: 1rem;
+    vertical-align: middle;
+}
 
 @keyframes blink { 50% { box-shadow: 0 0 10px #000000; }  }

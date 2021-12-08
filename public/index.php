@@ -60,6 +60,10 @@ if (isset($_GET['id'])) {
     }
 }
 
+if (empty($id)) {
+    $id = $_SESSION['workingdir'];
+}
+
 // job directory
 $WORKING_DIR = 'jobs/' . $_SESSION['workingdir'];
 
@@ -508,6 +512,7 @@ if (is_array($SlideArray)) {
                 <?php } else if ($CurrentSlide['kind'] === 'video') { ?>
                 <video id="media" controls src='<?php echo "jobs/{$id}/{$CurrentSlide['media']}"; ?>'></video>
                 <?php } ?>
+                <span class="timer"></span>
             </div>
             <nav>
                 <form method="post" action="?id=<?php echo $id; ?>">
@@ -524,6 +529,7 @@ if (is_array($SlideArray)) {
                 <button class="btn-action" data-action="upload">Upload</button>
                 <button class="btn-action" data-action="record">Record video</button>
                 <button class="btn-action" data-action="audio">Record audio</button>
+                <canvas class="visualiser" width="150" height="39"></canvas>
                 <button class="video-control" id="start-record" hidden>Start recording</button>
                 <button class="video-control" id="stop-record" hidden>Stop recording</button>
                 <form method="post" action="?id=<?php echo $id; ?>" class="upload" hidden enctype="multipart/form-data">
