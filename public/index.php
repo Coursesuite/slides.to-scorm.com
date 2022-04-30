@@ -527,6 +527,8 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
     <div class="actions"><?php if ($step > 0) { ?><button onclick="document.getElementById('download').showModal();">Download</button> <?php } ?><form method="get"><button name="reset" value="1">Reset</button></form></div>
   </div>
   <div class="step"><?php if ($step === 0) { ?>
+    <div class="flex">
+    <div class="intro">
         <h3>How to use this tool</h3>
         <p>Upload a presentation (ppt, pptx, keynote or ods) or google slides. Then upload or record audio or video to each slide. You can download a SCORM-compatible zip file. When played, the slides will automatically change when the video or audio finishes playing (or after <?php echo DEFAULT_DURATION; ?> seconds if no audio/video was recorded - you can change this). A SCORM completion occurs when the last slide finishes playing.</p>
         <p>Once a file is converted, a <b>Download</b> button will appear next to <b>Reset</b>. You can download your package even if you haven't recorded media for each slide yet.</p>
@@ -534,9 +536,15 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
         <ul>
         <li>Sometimes Google Slides don't convert properly. If this happens, export them as PPTX or PDF and upload as a file instead.</li>
         <li>Video uses <i>webm</i> format by default, which is not suported in Safari. We don't (yet) convert this for you.</li>
+        <li>You can't (yet) click on the timeline to skip ahead in a slide.</li>
         </ul>
         <h3>Privacy</h3>
         <p>We store your slides and media in a temporary folder. You can delete this folder at any time by pressing the <b>Reset</b> button. Temporary data will be removed from our server automatically as required. Google analytics is used to track basic details about your use of this tool. We don't capture or store any personal information.</p>
+    </div>
+    <div class="example">
+        <div class="ratio"><iframe src="/sample_course/index.html" width="100%" height="100%" frameborder="0"></iframe></div>
+    </div>
+    </div>
   <?php } else if ($step === 1) { ?>
         <h2>Record audio or video for each slides</h2>
   <?php } ?></div>
