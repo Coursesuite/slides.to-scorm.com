@@ -498,6 +498,11 @@ global $id;
 /*
 Convert mp4 video to webm format with ffmpeg:
 ffmpeg -i input-file.mp4 -c:v libvpx -crf 10 -b:v 1M -c:a libvorbis output-file.webm
+
+convert webm to mp4:
+ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
+// see https://blog.addpipe.com/converting-webm-to-mp4-with-ffmpeg/
+
 */
 
 ?><!DOCTYPE html>
