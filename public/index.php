@@ -8,6 +8,8 @@ use \CloudConvert\Models\Job;
 use \CloudConvert\Models\Task;
 use Mhor\MediaInfo\MediaInfo;
 
+
+define('DEFAULT_DURATION', 20);
 $step =  0;
 $error = 0;
 $feedback = "";
@@ -359,9 +361,9 @@ switch ($action) {
         break;
 
     case "reset":
-        // if (file_exists($WORKING_DIR)) {
-        //     unlink($WORKING_DIR);
-        // }
+        if (file_exists($WORKING_DIR)) {
+            unlink($WORKING_DIR);
+        }
         $id = md5(time() . rand(0, 9999));
         $_SESSION['workingdir'] = $id;
         $WORKING_DIR = $id;
@@ -375,7 +377,7 @@ switch ($action) {
         $file = $_FILES['media'];
         $SlideArray = LoadSlides();
         $page = isset($_POST['slide']) ? intval($_POST['slide']) : 1;
-        $duration = isset($_POST['duration']) ? intval($_POST['duration']) : 0;
+        $duration = isset($_POST['duration']) ? intval($_POST['duration']) : $defaultduration * 1000;
         if ($file['error'] == 0) {
             if ($file['type'] == "audio/mp3" || $file['type'] == "audio/mpeg" || $file['type'] == "video/mp4" || $file['type'] == "video/webm") {
                 $ok = true;
@@ -402,6 +404,10 @@ switch ($action) {
 
         // content name
         $name = isset($_POST['name']) ? trim($_POST['name']) : $id;
+        $defaultduration = (isset($_POST['defaultduration'])) ? intval($_POST['defaultduration']) : DEFAULT_DURATION;
+
+        // set up default duration on slides with missing media
+        PrepareSlidesForDownload($defaultduration);
 
         // files for manifest
         $files = glob($WORKING_DIR . '/*');
@@ -461,16 +467,38 @@ switch ($action) {
 
 }
 
-if (is_array($SlideArray)) {
-    $downloadable = ($step > 0);
-    foreach ($SlideArray as $slide) {
-        if (is_null($slide['kind'])) {
-            $downloadable = false;
-            break;
+function PrepareSlidesForDownload($duration) {
+    $SlideArray = LoadSlides();
+    if (is_array($SlideArray)) {
+        foreach ($SlideArray as &$slide) {
+            if (is_null($slide['kind'])) {
+                $slide['kind'] = 'audio';
+                $slide['media'] = CreateBlankMp3($duration);
+                $slide['duration'] = $duration * 1000;
+            }
         }
+        StoreSlides($SlideArray);
     }
 }
 
+function CreateBlankMp3($duration) {
+global $id;
+    $filename = md5($duration) . '.mp3';
+    $location = "./jobs/{$id}/{$filename}"; // NOT realpath()
+    if (!file_exists($location)) {
+        // fast
+        $command = "ffmpeg -ar 48000 -t {$duration} -f s16le -acodec pcm_s16le -ac 2 -i /dev/zero -acodec libmp3lame -aq 4 {$location} 2>&1";
+        shell_exec($command);
+        // slow
+        $command2 = "ffmpeg -f lavfi -i anullsrc=r=44100:cl=mono -t {$duration} -q:a 9 -acodec libmp3lame {$location}";
+    }
+    return $filename;
+}
+
+/*
+Convert mp4 video to webm format with ffmpeg:
+ffmpeg -i input-file.mp4 -c:v libvpx -crf 10 -b:v 1M -c:a libvorbis output-file.webm
+*/
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -485,22 +513,48 @@ if (is_array($SlideArray)) {
     <link rel="stylesheet" href="app.css" type="text/css">
 </head>
 <body>
-    
-    <header>
-        <h1>Slides to Scorm</h1>
-        <h3>Automate slides with video or audio, get a completion</h3>
-    </header>
 
-    <main>
-<?php if ($step === 0) { ?>
+<div class="container">
+  <div class="header">
+    <div class="title">Slides to Scorm</div>
+    <div class="subtitle">Automate slides with video or audio, get a completion</div>
+    <div class="nav"><a href="https://pdf.to-scorm.com/">PDF 2 Scorm</a> | <a href="https://youtube.to-scorm.com/">YouTube 2 Scorm</a> | <a href="https://vimeo.to-scorm.com/">Vimeo 2 Scorm</a> | <a href="https://soundcloud.to-scorm.com/">SoundCloud 2 Scorm</a> | <a href="https://video.to-scorm.com/">Video 2 Scorm</a> | <a href="https://slides.to-scorm.com/">Slides 2 Scorm</a></div>
+    <div class="actions"><?php if ($step > 0) { ?><button onclick="document.getElementById('download').showModal();">Download</button> <?php } ?><form method="get"><button name="reset" value="1">Reset</button></form></div>
+  </div>
+  <div class="step"><?php if ($step === 0) { ?>
+        <h3>How to use this tool</h3>
+        <p>Upload a presentation (ppt, pptx, keynote or ods) or google slides. Then upload or record audio or video to each slide. You can download a SCORM-compatible zip file. When played, the slides will automatically change when the video or audio finishes playing (or after <?php echo DEFAULT_DURATION; ?> seconds if no audio/video was recorded - you can change this). A SCORM completion occurs when the last slide finishes playing.</p>
+        <p>Once a file is converted, a <b>Download</b> button will appear next to <b>Reset</b>. You can download your package even if you haven't recorded media for each slide yet.</p>
+        <h3>Known issues</h3>
+        <ul>
+        <li>Sometimes Google Slides don't convert properly. If this happens, export them as PPTX or PDF and upload as a file instead.</li>
+        <li>Video uses <i>webm</i> format by default, which is not suported in Safari. We don't (yet) convert this for you.</li>
+        </ul>
+        <h3>Privacy</h3>
+        <p>We store your slides and media in a temporary folder. You can delete this folder at any time by pressing the <b>Reset</b> button. Temporary data will be removed from our server automatically as required. Google analytics is used to track basic details about your use of this tool. We don't capture or store any personal information.</p>
+  <?php } else if ($step === 1) { ?>
+        <h2>Record audio or video for each slides</h2>
+  <?php } ?></div>
+  <div class="slides"><?php if ($step === 1) { ?>
+    <form method="post" action="?id=<?php echo $id; ?>" class="slides">
+        <input type="hidden" name="step" value="1">
+        <input type="hidden" name="action" value="reload">
+        <ol>
+<?php foreach ($SlideArray as $index => $slide) { ?>
+        <li<?php if ($slide === $CurrentSlide) echo " class='selected'"; ?>>
+            <?php if ($slide['kind'] === 'video') { ?>
+            <span class="icon" title='Video recording'>🎥</span>
+            <?php } else if ($slide['kind'] === 'audio') { ?>
+            <span class="icon" title='Audio recording'>🎤</span>
+            <?php } ?>
+            <button type="submit" name="slide" value="<?php echo $index + 1; ?>"><img src="<?php echo "/jobs/", $id, "/", $slide['image']; ?>" alt="Select slide <?php echo $index + 1; ?>"></button>
+        </li>
+<?php } ?>
+        </ol>
+    </form>
+  <?php } ?></div>
+  <div class="canvas"><?php if ($step === 0) { ?>
 
-        <section class="intro">
-            <p>Upload a presentation (ppt, pptx, keynote or ods) or google slides. Then upload or record audio or video to each slide. Then you can download a SCORM-compatible zip file. When played, the slides will automatically change when the video or audio finishes playing. A SCORM completion occurs when the last slide finishes playing.</p>
-			<p>Sometimes Google Slides don't convert properly. If this happens, export them as PPTX or PDF and upload as a file instead.</p>
-			<p>For slides that have video, you can tap the video to change its position, or press-and-hold to change its size (at runtime, not in this editor).</p>
-        </section>
-
-        <section class="convert-slides">
         <h2>Select a presentation to load</h2>
         <form method="post" enctype="multipart/form-data" action="?id=<?php echo $id; ?>">
             <input type="hidden" name="action" value="convert">
@@ -514,8 +568,6 @@ if (is_array($SlideArray)) {
 
 <?php } else if ($step === 1) { ?>
 
-        <section class="record-media">
-        <h2>Record audio or video for each slides</h2>
         <div class="slide-container" data-index="<?php echo $page; ?>">
             <div class="slide-image">
                 <img src="<?php echo "jobs/{$id}/{$CurrentSlide['image']}"; ?>" alt="Slide Image">
@@ -562,34 +614,29 @@ if (is_array($SlideArray)) {
                 <?php } ?>
             </div>
         </div>
-        </section>
 
-<?php }
-if ($downloadable) { ?>
+<?php } ?></div>
+  <div class="footer">Need something more comprehensive? Try <a href="https://www.courseassembler.com/">Course Assembler</a>.</div>
+</div>
 
-        <section class="download-package">
-            <h3>Your package is ready to download</h3>
-            <form method="post" action="?id=<?php echo $id; ?>">
-                <label>Name: <input type="text" size="40" name="name" placeholder="Enter a name for your course"></label>
-                <input type="submit" name="action" value="Download">
-            </form>
-        </section>
+<dialog id="download">
+    <h3>Enter a name for your course</h3>
+    <form method="post" action="?id=<?php echo $id; ?>">
+        <input type="hidden" name="slide" value="<?php echo $page; ?>">
+        <label>Name: <input type="text" size="40" name="name" placeholder="Type in here ..."></label>
+        <br>
+        <label>Default slide duration: <input type="number" name="defaultduration" value="<?php echo DEFAULT_DURATION; ?>" min="1" max="300" step="1"> seconds</label>
+        <p class="center"><input type="submit" name="action" value="Download"></p>
+    </form>
+    <a href='' onclick="document.getElementById('download').close();return false;">✖️ Close</a>
+</dialog>
 
-<?php } ?>
-
-    </main>
 
     <form method="post" action="?id=<?php echo $id; ?>" id="reload">
         <input type="hidden" name="step" value="1">
         <input type="hidden" name="slide" value="<?php echo $page; ?>">
         <input type="hidden" name="action" value="reload">
     </form>
-
-    <footer>
-    <p><?php echo "ID: {$id}"; ?> <a href="?reset=1">Reset</a></p>
-    <p><a href="https://pdf.to-scorm.com/">PDF 2 Scorm</a> | <a href="https://youtube.to-scorm.com/">YouTube 2 Scorm</a> | <a href="https://vimeo.to-scorm.com/">Vimeo 2 Scorm</a> | <a href="https://soundcloud.to-scorm.com/">SoundCloud 2 Scorm</a> | <a href="https://video.to-scorm.com/">Video 2 Scorm</a> | <a href="https://slides.to-scorm.com/">Slides 2 Scorm</a></p>
-    <p>Need something more comprehensive? Try <a href="https://www.courseassembler.com/">Course Assembler</a>.</p>
-    </footer>
 
     <script src="https://unpkg.com/mic-recorder-to-mp3"></script>
     <script src="https://unpkg.com/fix-webm-duration"></script>
