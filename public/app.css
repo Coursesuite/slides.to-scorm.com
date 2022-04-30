@@ -1,8 +1,15 @@
+:root {
+    --border: #115516;
+    --menu: #eee;
+    --button: #ddd;
+}
+
 html {
     box-sizing: border-box;
     font-size: 62.5%; 
     line-height: 1.15;
     -webkit-text-size-adjust: 100%;
+    min-height: 100vh;
 }
 
 body {
@@ -13,21 +20,119 @@ body {
     letter-spacing: .01em;
     line-height: 1.6;
     margin: 0;
+    height: 100vh;
+    position: relative;
+    overflow-x: hidden;
 }
 
-header {
-    color: #fff;
-    padding: 1rem 2rem;
-    background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEMAAABkCAMAAADqvX3PAAAAKlBMVEUAAADX19fX19fBwcHT09PX19fW1tbT09PW1tbV1dXOzs7Ozs7BwcHV1dX5uIg2AAAADnRSTlMAPQAKH0czAAApFAAAAHys1goAAAHwSURBVHja7ZfdcuMwCEb1GUIDcd//dZuk2n5rZzCKOzuzFzo3+XNOBAIHtQosxwi0XUw/jjh2qN1pVzV43FJwJIDLuq5tvaNmzxeEZI5wWP/p9v0gypgGYhGH8fL28yyM7ycOJkFlJW3tZDHhRdBjIO22JR6a1BGMgTAWopvr6BC1jSB1MDWyXYfvkpDlg4iiV83lITiuoXZL+U4/ltcNq2MhogaYBWMYjYU8HHfSRdTrCIOLYImemrfz8dMO6DlVGYyFMWz3tmuGY6GgO1ikXVM51JDXurBO0nyEcyPTnvOXvmyb0hzqfV64jUUYw47Re9CZe6EbeC+M39+TcfK/gTFZuxZgOSag7aMASwGkrQW1Y2lLwXRMx3RMx3T8Pw67FpSOcA5RCccOcTMNL05aRw7Fn2kizA7+1VNH6ENAOBgOxiIK888dHPVqh+Q/yeknzQfHkhx+nqyjT0QFzDUd2Skp53lp7PdFnEkYIhzQv/KRzJUV0QdDSON5+S14CEW0vqSTiAPWWDknCLsY0BZxnNP0L/Z9YQEO8yznXZ2yNwfgTu7rNFgj9aamvS9eZljMTNOeoybSGNwQkvZ+3XrCU07t4HmWSBjDLBzEwdSzhMYcRPRZNYmgdjA1FyahcKQIqpKZs8N0TMd0TMd0/BvHF8n9f8tHo7HcAAAAAElFTkSuQmCC'),linear-gradient(to left, #147e12, #1c3819);
+.center {
+    text-align: center;
 }
 
-h3,h4,
-header>* {
+.container {  display: grid;
+  grid-template-columns: min-content 1fr;
+  grid-template-rows: min-content min-content 1fr min-content;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "header header"
+    "step step"
+    "slides canvas"
+    "footer footer";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+}
+
+.header {  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "title nav"
+    "subtitle actions";
+  justify-self: stretch;
+  align-self: stretch;
+  grid-area: header;
+
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEMAAABkCAMAAADqvX3PAAAAKlBMVEUAAADX19fX19fBwcHT09PX19fW1tbT09PW1tbV1dXOzs7Ozs7BwcHV1dX5uIg2AAAADnRSTlMAPQAKH0czAAApFAAAAHys1goAAAHwSURBVHja7ZfdcuMwCEb1GUIDcd//dZuk2n5rZzCKOzuzFzo3+XNOBAIHtQosxwi0XUw/jjh2qN1pVzV43FJwJIDLuq5tvaNmzxeEZI5wWP/p9v0gypgGYhGH8fL28yyM7ycOJkFlJW3tZDHhRdBjIO22JR6a1BGMgTAWopvr6BC1jSB1MDWyXYfvkpDlg4iiV83lITiuoXZL+U4/ltcNq2MhogaYBWMYjYU8HHfSRdTrCIOLYImemrfz8dMO6DlVGYyFMWz3tmuGY6GgO1ikXVM51JDXurBO0nyEcyPTnvOXvmyb0hzqfV64jUUYw47Re9CZe6EbeC+M39+TcfK/gTFZuxZgOSag7aMASwGkrQW1Y2lLwXRMx3RMx3T8Pw67FpSOcA5RCccOcTMNL05aRw7Fn2kizA7+1VNH6ENAOBgOxiIK888dHPVqh+Q/yeknzQfHkhx+nqyjT0QFzDUd2Skp53lp7PdFnEkYIhzQv/KRzJUV0QdDSON5+S14CEW0vqSTiAPWWDknCLsY0BZxnNP0L/Z9YQEO8yznXZ2yNwfgTu7rNFgj9aamvS9eZljMTNOeoybSGNwQkvZ+3XrCU07t4HmWSBjDLBzEwdSzhMYcRPRZNYmgdjA1FyahcKQIqpKZs8N0TMd0TMd0/BvHF8n9f8tHo7HcAAAAAElFTkSuQmCC'),linear-gradient(to left, #147e12, #1c3819);
+  color: white;
+}
+
+.title { grid-area: title; padding: 1rem 0 0 1rem; font-size: 2.4rem; font-weight: bold; }
+
+.subtitle { grid-area: subtitle; padding: 1rem 0 0 1rem; font-weight: bold; }
+
+.nav {
+  justify-self: end;
+  align-self: start;
+  grid-area: nav;
+  font-size: 1.2rem;
+   padding: 1rem 1rem 0 0;
+}
+
+.nav > a {
+  color: inherit;
+}
+
+.actions {
+  justify-self: end;
+  align-self: end;
+  grid-area: actions;
+}
+.actions > * { display: inline-block; }
+.actions button {
+    margin: 0 1rem 1rem 0;
+}
+
+.step { grid-area: step;
+  background-color: var(--menu);
+  padding:1rem;
+ }
+
+.slides { grid-area: slides;
+  background-color: var(--menu);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.slides img {
+    width: 150px;
+    vertical-align: top;
+}
+.slides>form ol { margin: 0;}
+.slides>form li {
+    position: relative;
+}
+.slides>form li button {
+  border-color: white;
+}
+.slides>form li.selected button {
+    border-color: var(--border);
+    color: white;
+}
+.slides>form li span.icon {
+    position: absolute;
+    top: 2.5rem;
+    left: -2.5rem;
+}
+.slides>form button {
     margin: 0;
+    padding: 0;
 }
 
-.slide-index, main {
-    margin: 0 2rem;
+.canvas { grid-area: canvas;
+  text-align: center;
+}
+
+.footer { grid-area: footer;
+  background: linear-gradient(to left, #1c3819, #147e12);
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+}
+.footer a {
+  color: inherit;
 }
 
 button, input[type='submit'] {
@@ -35,36 +140,22 @@ button, input[type='submit'] {
     padding: 10px;
     display: inline-block;
     margin: 20px auto;
-    border: 2px solid #113355;
+    border: 2px solid var(--border);
     cursor: pointer;
-    background-color: #eeeeee;
-}
-
-footer {
-    font-size: .9rem;
-    margin-top: 1rem;
-}
-
-.download-package,
-footer,
-.slide-container {
-    text-align: center;
+    background-color: var(--button);
 }
 
 .slide-image {
-    border: 2px solid #113355;
-}
-
-.download-package {
-    padding-top: 1rem;
-    background-color: lightgreen;
+    padding: 1rem;
 }
 
 .slide-image img {
     max-width: 100%;
+    max-height: 50vh;
     object-fit: contain;
     display: block;
     margin: 0 auto;
+    box-shadow: 0 0 2rem #00000020;
 }
 
 .slide-image .timer {
@@ -82,14 +173,14 @@ footer,
 
 #media {
     position: absolute;
-    bottom: 1rem;
-    right: 1rem;
+    bottom: 2rem;
+    right: 2rem;
     max-width: 25%;
 }
 
-.record-media.recording .video-control,
-.record-media.recording .slide-image video#media,
-.record-media.recording button[data-action='audio'] {
+.canvas.recording .video-control,
+.canvas.recording .slide-image video#media,
+.canvas.recording button[data-action='audio'] {
     animation: blink 1s;
     animation-iteration-count: infinite;
     box-shadow: 0 0 10px red;
@@ -107,18 +198,28 @@ video#media {
     display: none;
 }
 
-.download-package label {
-    margin-top: .5rem;
+#download label {
+    margin-bottom: 1rem;
     display: block;
 }
-.download-package label input {
-    padding: .5rem;
+#download label input {
+    padding: 1rem;
 }
 
 .visualiser {
     display: none;
     margin-left: 1rem;
     vertical-align: middle;
+}
+
+dialog a {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: black;
+  color: white;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
 }
 
 @keyframes blink { 50% { box-shadow: 0 0 10px #000000; }  }
