@@ -9,11 +9,15 @@ App.init = function() {
   const canvas = document.querySelector("canvas.visualiser");
   const timer = document.querySelector("span.timer");
 
-  const div = document.querySelector(".record-media");
+  const div = document.querySelector(".canvas");
 
   const start_button = document.querySelector("#start-record");
   const stop_button = document.querySelector("#stop-record");
   const upload_form = document.querySelector("form.upload");
+
+  const selected = document.querySelector("li.selected");
+
+  if (selected) selected.scrollIntoView({behaviour:"smooth", block:"center"});
 
   let camera_stream = null;
   let media_recorder = null;
@@ -29,21 +33,25 @@ App.init = function() {
     cameraOptions = {}
 
   if (typeof MediaRecorder.isTypeSupported == 'function'){
-    if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-      cameraOptions = {mimeType: 'video/webm;codecs=h264'};
-      mediaType = "video/webm;codecs=h264";
+    // h264 unreliable in firefox, whereas webm works in both firefox and chrome
+    // if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) { // chrome
+    //   cameraOptions = {mimeType: 'video/webm;codecs=h264'};
+    //   mediaType = "video/webm;codecs=h264";
+    // } else  
+    if (MediaRecorder.isTypeSupported('video/webm')) { // chrome, firefox
     } else  if (MediaRecorder.isTypeSupported('video/webm')) {
       cameraOptions = {mimeType: 'video/webm'};
-    } else  if (MediaRecorder.isTypeSupported('video/mp4')) {
-      cameraOptions = {mimeType: 'video/mp4', videoBitsPerSecond : 2500000};
+    } else  if (MediaRecorder.isTypeSupported('video/mp4')) { // safari
+      cameraOptions = {mimeType: 'video/mp4', videoBitsPerSecond : 256 * 8 * 1024};
       mediaExtn = "mp4";
       mediaType = "video/mp4";
     }
+    console.log(cameraOptions,mediaExtn,mediaType);
   }
 
   if (audio_button) {
     audio_recorder = new MicRecorder({
-      bitRate: 192
+      bitRate: 256
     });
     audio_button.addEventListener('click', recordAudio);
   }
