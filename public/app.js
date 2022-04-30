@@ -46,7 +46,6 @@ App.init = function() {
       mediaExtn = "mp4";
       mediaType = "video/mp4";
     }
-    console.log(cameraOptions,mediaExtn,mediaType);
   }
 
   if (audio_button) {
