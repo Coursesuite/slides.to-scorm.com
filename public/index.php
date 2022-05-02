@@ -93,9 +93,64 @@ function get_acceptable_extensions() {
     return trim($types,',');
 }
 
+function TrackEvent($source,$message) {
+global $id;
+    $apisecret = "HaRacL5nQSmhlunZj7B3fQ";
+    $measurementId = "G-4DT44QT3YY";
+    $clientId = preg_replace("/^.+\.(.+?\..+?)$/", "\\1", @$_COOKIE['_ga']);
+    $timestamp = round(microtime(true) * 1000);
+    if (!empty($clientId)) {
+        $payload = new stdClass();
+        $payload->client_id = $clientId;
+        $payload->user_id = $id;
+        $payload->non_personalized_ads = true;
+        $payload->timestamp = $timestamp;
+        $payload->events = [];
+        $event = new stdClass();
+        $event->name = "server";
+        $event->params = new stdClass();
+        $event->params->$source = $message;
+        $payload->events[] = $event;
+        $req = curl_init("https://www.google-analytics.com/mp/collect?api_secret={$apisecret}&measurement_id={$measurementId}");
+        curl_setopt_array($req, array(
+            CURLOPT_POST => TRUE,
+            CURLOPT_RETURNTRANSFER => TRUE,
+            CURLOPT_POSTFIELDS => json_encode($payload),
+            CURLOPT_HTTPHEADER => array(
+                "Content-Type: application/json",
+            )
+        ));
+        $response = curl_exec($req);
+        // file_put_contents('log.txt', $timestamp.PHP_EOL.json_encode($payload).PHP_EOL.$response.PHP_EOL , FILE_APPEND | LOCK_EX);
+        curl_close($req);
+    }
+
+}
+
+function removeDir($dirname) {
+    if (is_dir($dirname)) {
+        $dir = new RecursiveDirectoryIterator($dirname, RecursiveDirectoryIterator::SKIP_DOTS);
+        foreach (new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::CHILD_FIRST) as $object) {
+            if ($object->isFile()) {
+                unlink($object);
+            } elseif($object->isDir()) {
+                rmdir($object);
+            } else {
+                throw new Exception('Unknown object type: '. $object->getFileName());
+            }
+        }
+        rmdir($dirname); // Now remove myfolder
+    } else {
+        throw new Exception('This is not a directory');
+    }
+}
+
 // converts a google slide sharing link to a series of images
 //  https://docs.google.com/presentation/d/1mEqRIc8nzIj_iEtLcNBM0oHEQXdmEkWqf_okT_46xLo/edit?usp=sharing
 function downloadGoogleSlides($google, $folder) {
+
+    // track source as google slides
+    TrackEvent('source','googleslides');
 
     // ensure the folder exists
     createWorkingDir();
@@ -159,6 +214,7 @@ function downloadGoogleSlides($google, $folder) {
 // converts a compatible presentation to a series of images
 function convertSlides($upload, $folder) {
 
+
     // ensure the folder exists
     createWorkingDir();
 
@@ -172,6 +228,10 @@ function convertSlides($upload, $folder) {
     ]);
 
     $extn = pathinfo($upload['name'], PATHINFO_EXTENSION);
+
+    // track conversion extension, implies source as upload
+    TrackEvent('source',$extn);
+
     if ($extn === "ppt" || $extn === "odp") {
         $TASK = (new Task('convert', 'task-1'))
             ->set('output_format','jpg')
@@ -362,7 +422,7 @@ switch ($action) {
 
     case "reset":
         if (file_exists($WORKING_DIR)) {
-            unlink($WORKING_DIR);
+            removeDir($WORKING_DIR);
         }
         $id = md5(time() . rand(0, 9999));
         $_SESSION['workingdir'] = $id;
@@ -438,6 +498,9 @@ switch ($action) {
 
         // get a download name
         $safename = safename($name);
+
+        // track download as the number of pages
+        TrackEvent('download',count($files_array));
 
         // package up the zip file
         $zip = new ZipArchive();
@@ -515,7 +578,15 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="description" content="A free tool to let you convert PPTX, KEYNOTE, GOOGLE SLIDES to an automatic web-based slideshow, with audio or video per slide. SCORM compatible.">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-    <link rel="stylesheet" href="app.css" type="text/css">
+    <link rel="stylesheet" href="app.202204301708.css" type="text/css">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4DT44QT3YY"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-4DT44QT3YY');
+    </script>
 </head>
 <body>
 
@@ -653,7 +724,7 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
 
     <script src="https://unpkg.com/mic-recorder-to-mp3"></script>
     <script src="https://unpkg.com/fix-webm-duration"></script>
-    <script src="app.js"></script>
+    <script src="app.202204301708.js"></script>
 
 </body>
 </html>
