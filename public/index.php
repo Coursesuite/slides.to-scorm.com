@@ -535,14 +535,14 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
         <h3>Known issues</h3>
         <ul>
         <li>Sometimes Google Slides don't convert properly. If this happens, export them as PPTX or PDF and upload as a file instead.</li>
-        <li>Video uses <i>webm</i> format by default, which is not suported in Safari. We don't (yet) convert this for you.</li>
+        <li>Video uses <i>webm</i> format by default, which is not suported in Safari. We don't (yet) convert this for you. 🤞</li>
         <li>You can't (yet) click on the timeline to skip ahead in a slide.</li>
         </ul>
         <h3>Privacy</h3>
         <p>We store your slides and media in a temporary folder. You can delete this folder at any time by pressing the <b>Reset</b> button. Temporary data will be removed from our server automatically as required. Google analytics is used to track basic details about your use of this tool. We don't capture or store any personal information.</p>
     </div>
     <div class="example">
-        <div class="ratio"><iframe src="/sample_course/index.html" width="100%" height="100%" frameborder="0"></iframe></div>
+        <div class="ratio"><iframe src="/sample_course_1/index.html" width="100%" height="100%" frameborder="0"></iframe></div>
     </div>
     </div>
   <?php } else if ($step === 1) { ?>
