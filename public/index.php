@@ -95,7 +95,7 @@ function get_acceptable_extensions() {
 
 function TrackEvent($source,$message) {
 global $id;
-    $apisecret = "HaRacL5nQSmhlunZj7B3fQ";
+    $apisecret = file_get_contents("../analytics.key");
     $measurementId = "G-4DT44QT3YY";
     $clientId = preg_replace("/^.+\.(.+?\..+?)$/", "\\1", @$_COOKIE['_ga']);
     $timestamp = round(microtime(true) * 1000);
@@ -578,7 +578,7 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="description" content="A free tool to let you convert PPTX, KEYNOTE, GOOGLE SLIDES to an automatic web-based slideshow, with audio or video per slide. SCORM compatible.">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-    <link rel="stylesheet" href="app.202204301708.css" type="text/css">
+    <link rel="stylesheet" href="app.css" type="text/css">
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4DT44QT3YY"></script>
     <script>
@@ -724,7 +724,7 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
 
     <script src="https://unpkg.com/mic-recorder-to-mp3"></script>
     <script src="https://unpkg.com/fix-webm-duration"></script>
-    <script src="app.202204301708.js"></script>
+    <script src="app.js"></script>
 
 </body>
 </html>
