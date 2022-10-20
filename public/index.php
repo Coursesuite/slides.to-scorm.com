@@ -3,6 +3,11 @@ require_once('../vendor/autoload.php');
 
 session_start();
 
+// header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+// header("Cache-Control: post-check=0, pre-check=0", false);
+// header("Pragma: no-cache");
+// header("Vary: *");
+
 use \CloudConvert\CloudConvert;
 use \CloudConvert\Models\Job;
 use \CloudConvert\Models\Task;
@@ -211,6 +216,62 @@ function downloadGoogleSlides($google, $folder) {
     return $slides;
 }
 
+function convertWebmToMp4($input, $folder) {
+    $path = realpath($folder);
+
+    // create a new cloudconvert instance
+    $cloudconvert = new CloudConvert([
+        'api_key' => file_get_contents("../api.key"),
+        'sandbox' => false
+    ]);
+
+    $job = (new Job())
+    ->addTask(
+        (new Task('import/upload', 's2s-import-1'))
+        )
+    ->addTask(
+        (new Task('convert', 's2s-task-1'))
+            ->set('input_format', 'webm')
+            ->set('output_format', 'mp4')
+            ->set('engine', 'ffmpeg')
+            ->set('input', ["s2s-import-1"])
+            ->set('video_codec', 'x264')
+            ->set('crf', 23)
+            ->set('preset', 'fast')
+            ->set('subtitles_mode', 'none')
+            ->set('audio_codec', 'aac')
+            ->set('audio_bitrate', 128)
+        )
+    ->addTask(
+        (new Task('export/url', 's2s-export-1'))
+            ->set('input', ["s2s-task-1"])
+            ->set('inline', false)
+            ->set('archive_multiple_files', false)
+        ); 
+
+    $cloudconvert->jobs()->create($job);
+
+    // upload the file
+    $uploadTask = $job->getTasks()->whereName("s2s-import-1")[0];
+    $name = basename($input, ".webm");
+    $cloudconvert->tasks()->upload($uploadTask, fopen($input, 'r'), basename($input));
+
+    // wait for the job to finish
+    $cloudconvert->jobs()->wait($job);
+
+    // save each of the converted pages as separate files
+    foreach ($job->getExportUrls() as $file) {
+        $source = $cloudconvert->getHttpTransport()->download($file->url)->detach();
+        $dest = fopen($path . '/' . $file->filename, 'w');
+        stream_copy_to_stream($source, $dest);
+        fclose($dest);
+        $output = $file->filename;
+    }
+
+    return $output;
+
+}
+
 // converts a compatible presentation to a series of images
 function convertSlides($upload, $folder) {
 
@@ -233,30 +294,30 @@ function convertSlides($upload, $folder) {
     TrackEvent('source',$extn);
 
     if ($extn === "ppt" || $extn === "odp") {
-        $TASK = (new Task('convert', 'task-1'))
+        $TASK = (new Task('convert', 's2s-task-1'))
             ->set('output_format','jpg')
             ->set('input_format',$extn)
             ->set('engine','libreoffice')
             ->set('pixel_density', 300)
-            ->set('input',["import-1"]);
+            ->set('input',["s2s-import-1"]);
     } else {
-        $TASK = (new Task('convert', 'task-1'))
+        $TASK = (new Task('convert', 's2s-task-1'))
             ->set('output_format','jpg')
             ->set('pixel_density', 300)
-            ->set('input',["import-1"]);
+            ->set('input',["s2s-import-1"]);
     }
 
     // create a new job with its import, convert and export steps
     $job = (new Job())
     ->addTask(
-        (new Task('import/upload', 'import-1'))
+        (new Task('import/upload', 's2s-import-1'))
         )
     ->addTask(
         $TASK
         )
     ->addTask(
-        (new Task('export/url', 'export-1'))
-            ->set('input', ["task-1"])
+        (new Task('export/url', 's2s-export-1'))
+            ->set('input', ["s2s-task-1"])
             ->set('inline', false)
             ->set('archive_multiple_files', false)
         ); 
@@ -265,7 +326,7 @@ function convertSlides($upload, $folder) {
     $cloudconvert->jobs()->create($job);
 
     // upload the file
-    $uploadTask = $job->getTasks()->whereName("import-1")[0];
+    $uploadTask = $job->getTasks()->whereName("s2s-import-1")[0];
     $cloudconvert->tasks()->upload($uploadTask, fopen($upload['tmp_name'], 'r'), $upload['name']);
 
     // wait for the job to finish
@@ -443,10 +504,17 @@ switch ($action) {
                 $ok = true;
                 move_uploaded_file($file['tmp_name'], $WORKING_DIR . '/' . $file['name']);
                 $type = substr($file['type'], 0, 5);
-                $SlideArray[$page - 1]['media'] = $file['name'];
+
+                // safari as of 15.4 / 2022 doesn't do webm, so we have to convert webm to mp4
+                if ($file['type'] == 'video/webm') {
+                    $name = ConvertToMp4($file['name'], true);
+                } else {
+                    $name = $file['name'];
+                }
+                $SlideArray[$page - 1]['media'] = $name;
                 $SlideArray[$page - 1]['kind'] = $type;
                 if (intval($duration) < 1) { // e.g. uploaded a file rather than recorded a MediaStream
-                    $duration = GetDuration($WORKING_DIR . '/' . $file['name']);
+                    $duration = GetDuration($WORKING_DIR . '/' . $name);
                 }
                 $SlideArray[$page - 1]['duration'] = $duration;
                 StoreSlides($SlideArray);
@@ -558,6 +626,18 @@ global $id;
     return $filename;
 }
 
+function ConvertToMp4($input, $delete = false) {
+global $id;
+    $filename = basename($input,'.webm');
+    $location = "./jobs/{$id}/{$filename}";
+    $command = "ffmpeg -i {$location}.webm -fflags +genpts -r 25 {$location}.mp4";
+    shell_exec($command);
+    if ($delete) {
+        unlink($location . '.webm');
+    }
+    return $filename . '.mp4';
+}
+
 /*
 Convert mp4 video to webm format with ffmpeg:
 ffmpeg -i input-file.mp4 -c:v libvpx -crf 10 -b:v 1M -c:a libvorbis output-file.webm
@@ -587,6 +667,7 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
     gtag('js', new Date());
     gtag('config', 'G-4DT44QT3YY');
     </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8055550271725539" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -595,7 +676,7 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
     <div class="title">Slides to Scorm</div>
     <div class="subtitle">Automate slides with video or audio, get a completion</div>
     <div class="nav"><a href="https://pdf.to-scorm.com/">PDF 2 Scorm</a> | <a href="https://youtube.to-scorm.com/">YouTube 2 Scorm</a> | <a href="https://vimeo.to-scorm.com/">Vimeo 2 Scorm</a> | <a href="https://soundcloud.to-scorm.com/">SoundCloud 2 Scorm</a> | <a href="https://video.to-scorm.com/">Video 2 Scorm</a> | <a href="https://slides.to-scorm.com/">Slides 2 Scorm</a></div>
-    <div class="actions"><?php if ($step > 0) { ?><button onclick="document.getElementById('download').showModal();">Download</button> <?php } ?><form method="get"><button name="reset" value="1">Reset</button></form></div>
+    <div class="actions"><?php if ($step > 0) { ?><button onclick="document.getElementById('download').showModal();" data-track="Popup Modal">Download</button> <?php } ?><form method="get"><button name="reset" value="1" data-track="Reset">Reset</button></form></div>
   </div>
   <div class="step"><?php if ($step === 0) { ?>
     <div class="flex">
@@ -606,7 +687,8 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
         <h3>Known issues</h3>
         <ul>
         <li>Sometimes Google Slides don't convert properly. If this happens, export them as PPTX or PDF and upload as a file instead.</li>
-        <li>Video uses <i>webm</i> format by default, which is not suported in Safari. We don't (yet) convert this for you. 🤞</li>
+        <li>Video uses <i>webm</i> format by default, which is not suported in Safari, and so gets converted to mp4.</li>
+        <li>Safari 15+ has a bug recording video (audio seems fine) - wait until a new Safari comes out and 🤞, or use Chrome/Firefox.</li>
         <li>You can't (yet) click on the timeline to skip ahead in a slide.</li>
         </ul>
         <h3>Privacy</h3>
@@ -645,7 +727,7 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
             <input type="text" name="google" placeholder="Paste in Google Slides 'sharing' url" size="40">
             <span>or</span>
             <input type="file" name="file" accept="<?php echo get_acceptable_extensions(); ?>">
-            <input type="submit" value="Upload">
+            <input type="submit" value="Upload" data-track="Upload content">
             <output class="feedback"><?php echo $feedback; ?></output>
         </form>
         </section>
@@ -693,14 +775,14 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
                 <form method="post" action="?id=<?php echo $id; ?>">
                     <input type="hidden" name="step" value="1">
                     <input type="hidden" name="slide" value="<?php echo $page; ?>">
-                    <input type="submit" name="action" value="Delete">
+                    <input type="submit" name="action" value="Delete" data-track="Delete page">
                 </form>
                 <?php } ?>
             </div>
         </div>
 
 <?php } ?></div>
-  <div class="footer">Need something more comprehensive? Try <a href="https://www.courseassembler.com/">Course Assembler</a>.</div>
+  <div class="footer">Need something more comprehensive? Try <a href="https://www.courseassembler.com/" data-track="Upsell link">Course Assembler</a>.</div>
 </div>
 
 <dialog id="download">
@@ -710,7 +792,7 @@ ffmpeg -i video.webm -movflags faststart -preset veryfast video.mp4
         <label>Name: <input type="text" size="40" name="name" placeholder="Type in here ..."></label>
         <br>
         <label>Default slide duration: <input type="number" name="defaultduration" value="<?php echo DEFAULT_DURATION; ?>" min="1" max="300" step="1"> seconds</label>
-        <p class="center"><input type="submit" name="action" value="Download"></p>
+        <p class="center"><input type="submit" name="action" value="Download" data-track="Download"></p>
     </form>
     <a href='' onclick="document.getElementById('download').close();return false;">✖️ Close</a>
 </dialog>
