@@ -63,7 +63,16 @@
 		</div>
 
 	<script type="text/javascript">
-		// svg's from https://www.svgrepo.com/vectors/stop-button/
+		/*
+		 * Please feel free to modify this code. Nothing has been obsfucated or made intentionally difficult, and even contains some basic documentation.
+		 * Please consider contributing any changes back to the public repository, which is
+		 * https://github.com/Coursesuite/slides.to-scorm.com
+		 * If you find issues please report them on the repo link above!
+		 */
+
+		// SVG source
+		// https://www.svgrepo.com/vectors/stop-button/
+
 		// https://addpipe.com/media-recorder-api-demo/
 		!function(t,e){"use strict";"object"==typeof module&&"object"==typeof module.exports?module.exports=e(t,document):"function"==typeof define&&define.amd?define(null,function(){e(t,document)}):t.rangetouch=e(t,document)}("undefined"!=typeof window?window:this,function(t,e){"use strict";function n(t){return t instanceof HTMLElement&&t.classList.contains(l.selectors.disabled)}function o(t,e,n){t.addEventListener(e,n,!1)}function i(t){var e=(""+t).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);return e?Math.max(0,(e[1]?e[1].length:0)-(e[2]?+e[2]:0)):0}function u(t,e){if(e<1){var n=i(e);return parseFloat(t.toFixed(n))}return Math.round(t/e)*e}function r(t){var e,n=t.target,o=t.changedTouches[0],i=parseFloat(n.getAttribute("min"))||0,r=parseFloat(n.getAttribute("max"))||100,a=parseFloat(n.getAttribute("step"))||1,c=r-i,s=n.getBoundingClientRect(),d=100/s.width*(l.thumbWidth/2)/100;return e=100/s.width*(o.clientX-s.left),e<0?e=0:e>100&&(e=100),e<50?e-=(100-2*e)*d:e>50&&(e+=2*(e-50)*d),i+u(c*(e/100),a)}function a(t){l.enabled&&"range"===t.target.type&&!n(t.target)&&(t.preventDefault(),t.target.value=r(t),s(t.target,t.type===l.events.end?"change":"input"))}function c(){o(e.body,l.events.start,a),o(e.body,l.events.move,a),o(e.body,l.events.end,a)}function s(t,e,n){t.dispatchEvent(new CustomEvent(e,n))}function d(){return[l.selectors.range,":not(.",l.selectors.disabled,")"].join("")}var l={enabled:!0,selectors:{range:'[type="range"]',disabled:"rangetouch--disabled"},thumbWidth:15,events:{start:"touchstart",move:"touchmove",end:"touchend"}};return function(){if("ontouchstart"in e.documentElement){for(var t=e.querySelectorAll(d()),n=t.length-1;n>=0;n--)t[n].style.touchAction="manipulation",t[n].style.webkitUserSelect="none";c()}}(),{set:function(t,e){l[t]=e}}}),function(){"use strict";function t(t,e){e=e||{bubbles:!1,cancelable:!1,detail:void 0};var n=document.createEvent("CustomEvent");return n.initCustomEvent(t,e.bubbles,e.cancelable,e.detail),n}if("function"==typeof window.CustomEvent)return!1;t.prototype=window.Event.prototype,window.CustomEvent=t}();
 			var domReady=function(d){var b=!1,e=function(){document.addEventListener?(document.removeEventListener("DOMContentLoaded",a),window.removeEventListener("load",a)):(document.detachEvent("onreadystatechange",a),window.detachEvent("onload",a))},a=function(){b||!document.addEventListener&&"load"!==event.type&&"complete"!==document.readyState||(b=!0,e(),d())};if("complete"===document.readyState)d();else if(document.addEventListener)document.addEventListener("DOMContentLoaded",a),window.addEventListener("load",
@@ -77,7 +86,7 @@
 		/*!  * long-press-event - v2.4.4 |  * Pure JavaScript long-press-event |  * https://github.com/john-doherty/long-press-event |  * @author John Doherty <www.johndoherty.info> |  * @license MIT  */
 		!function(e,t){"use strict";var n=null,a="PointerEvent"in e||e.navigator&&"msPointerEnabled"in e.navigator,i="ontouchstart"in e||navigator.MaxTouchPoints>0||navigator.msMaxTouchPoints>0,o=a?"pointerdown":i?"touchstart":"mousedown",r=a?"pointerup":i?"touchend":"mouseup",m=a?"pointermove":i?"touchmove":"mousemove",u=0,s=0,c=10,l=10;function v(e){f(),e=function(e){if(void 0!==e.changedTouches)return e.changedTouches[0];return e}(e),this.dispatchEvent(new CustomEvent("long-press",{bubbles:!0,cancelable:!0,detail:{clientX:e.clientX,clientY:e.clientY},clientX:e.clientX,clientY:e.clientY,offsetX:e.offsetX,offsetY:e.offsetY,pageX:e.pageX,pageY:e.pageY,screenX:e.screenX,screenY:e.screenY}))||t.addEventListener("click",function e(n){t.removeEventListener("click",e,!0),function(e){e.stopImmediatePropagation(),e.preventDefault(),e.stopPropagation()}(n)},!0)}function d(a){f(a);var i=a.target,o=parseInt(function(e,n,a){for(;e&&e!==t.documentElement;){var i=e.getAttribute(n);if(i)return i;e=e.parentNode}return a}(i,"data-long-press-delay","1500"),10);n=function(t,n){if(!(e.requestAnimationFrame||e.webkitRequestAnimationFrame||e.mozRequestAnimationFrame&&e.mozCancelRequestAnimationFrame||e.oRequestAnimationFrame||e.msRequestAnimationFrame))return e.setTimeout(t,n);var a=(new Date).getTime(),i={},o=function(){(new Date).getTime()-a>=n?t.call():i.value=requestAnimFrame(o)};return i.value=requestAnimFrame(o),i}(v.bind(i,a),o)}function f(t){var a;(a=n)&&(e.cancelAnimationFrame?e.cancelAnimationFrame(a.value):e.webkitCancelAnimationFrame?e.webkitCancelAnimationFrame(a.value):e.webkitCancelRequestAnimationFrame?e.webkitCancelRequestAnimationFrame(a.value):e.mozCancelRequestAnimationFrame?e.mozCancelRequestAnimationFrame(a.value):e.oCancelRequestAnimationFrame?e.oCancelRequestAnimationFrame(a.value):e.msCancelRequestAnimationFrame?e.msCancelRequestAnimationFrame(a.value):clearTimeout(a)),n=null}"function"!=typeof e.CustomEvent&&(e.CustomEvent=function(e,n){n=n||{bubbles:!1,cancelable:!1,detail:void 0};var a=t.createEvent("CustomEvent");return a.initCustomEvent(e,n.bubbles,n.cancelable,n.detail),a},e.CustomEvent.prototype=e.Event.prototype),e.requestAnimFrame=e.requestAnimationFrame||e.webkitRequestAnimationFrame||e.mozRequestAnimationFrame||e.oRequestAnimationFrame||e.msRequestAnimationFrame||function(t){e.setTimeout(t,1e3/60)},t.addEventListener(r,f,!0),t.addEventListener(m,function(e){var t=Math.abs(u-e.clientX),n=Math.abs(s-e.clientY);(t>=c||n>=l)&&f()},!0),t.addEventListener("wheel",f,!0),t.addEventListener("scroll",f,!0),t.addEventListener(o,function(e){u=e.clientX,s=e.clientY,d(e)},!0)}(window,document);
 
-		// scorm 1.2 & 2004 combined functions
+		// scorm 1.2 & 2004 combined functions - nothing here you need to change
 		function learnerWillReturn(a){"API_1484_11"==_sAPI?a?scormSetValue("cmi.exit","suspend"):scormSetValue("cmi.exit","normal"):"API"==_sAPI&&(a?scormSetValue("cmi.core.exit","suspend"):scormSetValue("cmi.core.exit",""))}
 		function isFirstLaunch(){if("API_1484_11"==_sAPI)var a=scormGetValue("cmi.entry");else if("API"==_sAPI)a=scormGetValue("cmi.core.entry");else return!0;return"ab-initio"!=a?!1:!0}
 		function startSessionTime(){return _timeSessionStart=(new Date()).getTime()}
@@ -98,6 +107,8 @@
 		function formatTime(a){var b=Math.floor(a/3600);a-=3600*b;var c=Math.floor(a/60);a-=60*c;return"API_1484_11"==_sAPI?"PT"+b+"H"+c+"M"+a+"S":"API"==_sAPI?(10>b&&(b="0"+b),10>c&&(c="0"+c),10>a&&(a="0"+a),b+":"+c+":"+a):""}
 		function findAPI(a,b){var c=0;try{for(;null==a[b]&&null!=a.parent&&a.parent!=a;){c++;if(7<c)return console.log("findAPI gave up",a,b),null;a=a.parent}}catch(d){return console.log("findAPI forced to stop at domain boundary",a,b),null}return a[b]}
 		function getAPI(){if(null!=apiHandle)return apiHandle;var a=findAPI(window,"API_1484_11");null==a&&null!=window.opener&&"undefined"!=typeof window.opener&&(a=findAPI(window.opener,"API_1484_11"));null==a?(a=findAPI(window,"API"),null==a&&null!=window.opener&&"undefined"!=typeof window.opener&&(a=findAPI(window.opener,"API")),null!=a&&(_sAPI="API")):_sAPI="API_1484_11";return a};
+
+		// helper functions
 		Math.clip = function(n,i,x){return Math.max(i,Math.min(n,x));}
 		function HHMMSS(s) {
 			var date = new Date(1970,0,1);
@@ -106,13 +117,35 @@
 			return result.replace(/^00:/,"");
 		}
 
+		// Find and start SCORM (if available)
 		scormInitialize();
 
+		/*
+		 *	Here are the slides and their properties in an array of objects
+		 * [{
+		 * "name": "the slide title",
+		 * "kind": "audio" or "video",
+		 * "media": "filename.ext",
+		 * "duration": (number in milliseconds)
+		 * }, ...]
+		 *
+		 * Each slide WILL have at least one media, even if it doesn't contain audio/video
+		 * When a slide didn't contain media, a blank mp3 whose length is the default duration was created and is referenced. The same file will be reused over any slide that didn't contain media.
+		 *  
+		 */
 		var slides = {{slides}};
 
+		/*
+		 * Now comes the engine itself
+		 * 
+		 * Slides advance automatically when the media being played ends.
+		 * The duration property is only used to build the slide graph adn calculate the overall slideshow length.
+		 * 
+		 * Set up some global variables:
+		 */
 		var _sAPI,
 			apiHandle = (parent && parent !== self && parent.ninjaApiProxy) ? parent.ninjaApiProxy : getAPI(),
-			slideDOM = [],
+			slideDOM = [], // will contain the reference to the DOM node for each slide
 			currentSlide = 0,
 			timeAccumulated = 0,
 			playing = 0,
@@ -120,6 +153,7 @@
 			_unloaded = false,
 			_timeSessionStart = 0;
 
+		// references to various DOM objects
 		var slideGraph = document.querySelector(".slide-graph"),
 			playButton = document.getElementById("playback"),
 			startButton = document.getElementById("start"),
@@ -130,28 +164,34 @@
 			timeTotal = document.querySelector("#timestamp>span"),
 			slideNumber = document.querySelector("#timestamp>ins");
 
+		// slideMedia is a <video> object that emits events
 		slideMedia.volume = 1;
 		slideMedia.addEventListener("timeupdate", timeupdateEvent, false);
 		slideMedia.addEventListener("play", playEvent);
 		slideMedia.addEventListener("pause", pauseEvent);
 		slideMedia.addEventListener("ended", endedEvent);
 
+		// each slide contains a timeline of the playback position of the media on that slide. I call it a 'graph'.
+		// combined, each graph makes up the entire slideGraph
+		// as playback advances, the timeupdate Event increments the time property of the slide which in turn updates the graph for that slide instance.
 		slideGraph.innerHTML = "";
 		for (var i=0; i<slides.length; i++) {
 			var slide = slides[i];
 
+			// convert the slide duration to whole seconds
 			slides[i].duration = slides[i].duration / 1000;
 
-			var sp = document.createElement("span");
+			// now draw the graph for this slide
+			var sp = document.createElement("span"); // the 'grey' graph background
 			sp.title = i+1;
 			sp.onclick = gotoSlide;
 			sp.dataset.index = i;
-			var isp = document.createElement("span");
+			var isp = document.createElement("span"); // the 'red' graph that fills as time passes on the slide
 			isp.style = "width:0%";
 			sp.appendChild(isp);
 			slideGraph.appendChild(sp);
 			slideDOM[i] = isp;
-			var img = new Image();
+			var img = new Image(); // start loading / pre-caching the slide image
 			img.src = slide.image;
 
 			// time up to this slide
@@ -160,6 +200,7 @@
 			// total time for all slides (accumulative)
 			timeAccumulated += slides[i].duration;
 
+			// by setting the 'time' property of a slide update the graph
 			Object.defineProperty(slides[i], "time", {
 				configurable: false,
 				get: function () {
@@ -173,23 +214,32 @@
 			});
 		}
 
+		// the total time is the aggregate of all slide durations, so show that
 		timeTotal.textContent = HHMMSS(timeAccumulated);
+
+		// a SCORM call to log the starting time
 		startSessionTime();
 
+		// handle the PLAY event on the <video> object
 		function playEvent() {
 			playButton.setAttribute("class","playing");
 		}
 
+		// handle the PAUSE event on the <video> object
 		function pauseEvent() {
 			playButton.setAttribute("class","paused");
 		}
 
+		// handle the TIMEUPDATE event on the <video> object
 		function timeupdateEvent() {
 			let ctime = slideMedia.currentTime;
 			slides[currentSlide].time = slideMedia.currentTime;
+
+			// the time dislay is the accumulated slide lengths up until the current slide PLUS the current playback position in THIS slide.
 			timeDisplay.textContent = HHMMSS(slides[currentSlide].currentTotalTime + slideMedia.currentTime);
 		}
 
+		// show the current slide image, set its media, and start playback
 		function showSlide() {
 			started = 1;
 			slideImage.src = slides[currentSlide].image;
@@ -197,23 +247,30 @@
 			slideMedia.currentTime = 0;
 			slideMedia.play();
 			slideNumber.textContent = currentSlide + 1;
+
+			// tell SCORM which slide was the last one shown
 			setBookmark("" + currentSlide);
 		}
 
+		// handler for clicking on the <video> element
 		slideMedia.addEventListener("click", function (event) {
 			event.target.classList.toggle("alt");
 		});
 
+		// handler for click-and-hold on the <video> element
+		// (makes it bigger if it is small, or smaller if it is big)
 		slideMedia.addEventListener("long-press", function (event) {
 			event.preventDefault();
 			event.target.classList.toggle("big");
 		});
 
+		// start the playback of the slideshow the first time
 		startButton.addEventListener("click", function (event) {
 			playing = 1;
 			showSlide(0);
 		});
 
+		// the play button also doubles as the pause button
 		playButton.addEventListener("click", function (event) {
 			if (playing) {
 				slideMedia.pause();
@@ -224,6 +281,7 @@
 			}
 		});
 
+		// if the browser supports full screen, bind to the click-event for the fullscreen toggle button
 		if (screenfull.isEnabled) {
 			fullscreenButton.addEventListener("click", function(e) {
 				screenfull.toggle();
@@ -232,6 +290,7 @@
 			fullscreenButton.style.display = "none";
 		}
 
+		// clicking on the graph for a slide plays from that slide
 		function gotoSlide() {
 			let el = this.previousElementSibling;
 			while (el) {
@@ -242,6 +301,8 @@
 			showSlide();
 		}
 
+		// handle the ENDED event for the <video> object
+		// decides if there is another slide to show, or if the slideshow is over
 		function endedEvent() {
 			if (currentSlide < slides.length - 1) {
 				slideDOM[currentSlide].style.width ="100%";
@@ -252,9 +313,11 @@
 			}
 		}
 
+		// at the end of the slideshow, update SCORM and stop playback
 		function finish() {
 			playButton.setAttribute("class","stopped");
 
+			// standard SCORM calls for ending a SCO
 			learnerWillReturn(false);
 			if ("API_1484_11"==_sAPI) setPassFail("passed");
 			setCompletionStatus("completed");
@@ -262,6 +325,7 @@
 			scormCommit();
 		}
 
+		// called when the page is unloaded
 		function doUnload() {
 			if (!_unloaded) {
 				var t = (new Date()).getTime();
