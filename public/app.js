@@ -30,23 +30,54 @@ App.init = function() {
 
   let mediaType = "video/webm",
       mediaExtn = "webm",
-    cameraOptions = {}
+    cameraOptions = {};
+
+  if (gtag) {
+    Array.from(document.querySelectorAll("[data-track]")).forEach(function(el) {
+      el.addEventListener('click', function (e) {
+        gtag('event', 'click', {'event_category': 'click', 'event_label': e.target.dataset.track});
+      });
+    });
+  }
 
   if (typeof MediaRecorder.isTypeSupported == 'function'){
+
+    // if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) mediaType = 'video/webm;codecs=vp8,opus';
+    // if (MediaRecorder.isTypeSupported('video/webm;codecs=av1,opus')) mediaType = 'video/webm;codecs=av1,opus';
+    // if (MediaRecorder.isTypeSupported('video/webm;codecs=avc1,opus')) mediaType = 'video/webm;codecs=avc1,opus';
+    // if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) mediaType = 'video/webm;codecs=vp9,opus';
+    // if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) mediaType = 'video/webm;codecs=h264';
+    // if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) mediaType = 'video/mp4;codecs=h264';
+    // if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) mediaType = 'video/mp4;codecs=avc1';
+    // cameraOptions = {mimeType: mediaType};
+    // if (mediaType.indexOf('/mp4') !== -1) {
+    //   cameraOptions['videoBitsPerSecond'] = 256 * 8 * 1024;
+    //   mediaExtn = "mp4";
+    // }
+
     // h264 unreliable in firefox, whereas webm works in both firefox and chrome
-    // if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) { // chrome
-    //   cameraOptions = {mimeType: 'video/webm;codecs=h264'};
-    //   mediaType = "video/webm;codecs=h264";
-    // } else  
-    if (MediaRecorder.isTypeSupported('video/webm')) { // chrome, firefox
-    } else  if (MediaRecorder.isTypeSupported('video/webm')) {
+    if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) { // chrome
+      cameraOptions = {mimeType: 'video/webm;codecs=h264'};
+      mediaType = "video/webm;codecs=h264";
+    } else if (MediaRecorder.isTypeSupported('video/webm')) { // chrome, firefox
       cameraOptions = {mimeType: 'video/webm'};
-    } else  if (MediaRecorder.isTypeSupported('video/mp4')) { // safari
+      mediaType = "video/webm";
+    // } else  if (MediaRecorder.isTypeSupported('video/webm')) {
+    //   cameraOptions = {mimeType: 'video/webm'};
+    // } else
+    } else if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) { // safari
+      cameraOptions = {mimeType: 'video/mp4;codecs=h264' };
+      mediaExtn = "mp4";
+      mediaType = "video/mp4";
+
+    } else if (MediaRecorder.isTypeSupported('video/mp4')) { // safari
       cameraOptions = {mimeType: 'video/mp4', videoBitsPerSecond : 256 * 8 * 1024};
       mediaExtn = "mp4";
       mediaType = "video/mp4";
     }
   }
+
+  console.dir(cameraOptions);
 
   if (audio_button) {
     audio_recorder = new MicRecorder({
@@ -97,6 +128,8 @@ App.init = function() {
       video.srcObject = camera_stream;
       start_button.style.display = 'inline-block';
 
+      console.dir(camera_stream);
+
     });
   }
 
@@ -107,11 +140,12 @@ App.init = function() {
       blobs_recorded = [];
       start_time = Date.now();
 
+      // ensure media recorder is stopped.
+      media_recorder.stop();
+      //camera_stream.getTracks().forEach(track => track.stop());
+
       media_recorder.addEventListener('dataavailable', function(e) {
-        // var data = event.data;
-        // if (data && data.size > 0) {
-        //     mediaParts.push(data);
-        // }
+        console.dir(e.data.size);
         blobs_recorded.push(e.data);
       });
 
@@ -122,7 +156,7 @@ App.init = function() {
         start_button.style.display = 'inline-block';
       });
 
-      media_recorder.start(300);
+      media_recorder.start(1000); // blobs per second
       div.classList.add("recording");
       document.querySelector("#video_feedback").textContent = "";
 
@@ -134,6 +168,7 @@ App.init = function() {
   if (stop_button) {
     stop_button.addEventListener('click', function() {
       media_recorder.stop();
+      //camera_stream.getTracks().forEach(track => track.stop());
       div.classList.remove("recording");
 
       document.querySelector("#video_feedback").textContent = "Video recorded - ready to upload";
@@ -144,9 +179,14 @@ App.init = function() {
         event.preventDefault();
         const fd = new FormData(upload_form);
         let blob = new Blob(blobs_recorded, { type: mediaType });
-        const fixedBlob = await ysFixWebmDuration(blob, duration, {logger: false});
-        blob = null; // early gc
-        fd.append("media", fixedBlob, "recording-" + page + "." + mediaExtn);
+        if (mediaExtn === 'webm') {
+          const fixedBlob = await ysFixWebmDuration(blob, duration, {logger: false});
+          fd.append("media", fixedBlob, "recording-" + page + "." + mediaExtn);
+          blob = null; // early gc
+        } else {
+          fd.append("media", blob, "recording-" + page + "." + mediaExtn);
+          console.log(cameraOptions, blob.size, blob.type);
+        }
         fd.append("action","upload recording");
         let result = await fetch("index.php" + location.search, {
           method: "POST",
